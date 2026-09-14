@@ -24,9 +24,10 @@ libraries it depends on (model harness, output layout, secure I/O, shared UI ass
 
 AGPL-3.0-or-later. See [LICENSE](LICENSE).
 
+<!-- BEGIN GENERATED DEPENDENCIES (see scripts/export-to-public-repos.sh) -->
 ## Dependencies
 
-This list is generated directly from [`/home/mjcasey/projects/artifice-transcribe/apps/artifice-transcribe/pyproject.toml`](/home/mjcasey/projects/artifice-transcribe/apps/artifice-transcribe/pyproject.toml) — the actual `dependencies`/`optional-dependencies` tables, not hand-maintained. `.github/workflows/dependency-guard.yml` fails the build if `uv.lock` ever drifts from this file, so any dependency change (including an unreviewed addition) shows up as an explicit, reviewable diff.
+This list is generated directly from [`apps/artifice-transcribe/pyproject.toml`](apps/artifice-transcribe/pyproject.toml) — the actual `dependencies`/`optional-dependencies` tables, not hand-maintained. `.github/workflows/dependency-guard.yml` fails the build if `uv.lock` ever drifts from this file, so any dependency change (including an unreviewed addition) shows up as an explicit, reviewable diff.
 
 **Core:**
 
@@ -76,3 +77,4 @@ This list is generated directly from [`/home/mjcasey/projects/artifice-transcrib
 - `pywebview>=5.0`
 
 For the complete resolved dependency tree (including transitive dependencies), see `uv.lock` at the repo root, or run `uv tree`.
+<!-- END GENERATED DEPENDENCIES -->

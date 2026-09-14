@@ -1,0 +1,16 @@
+# SPDX-FileCopyrightText: 2026 Maurice Casey
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# gitleaks allowlist — deliberately suppressed findings.
+#
+# Entries are fingerprints (path:rule:line), not bare paths, so suppression
+# is pinned to the exact line. A real secret added anywhere else in the same
+# file still produces a different fingerprint and is still reported.
+#
+# apps/artifice-transcribe/tests/test_download.py:442 asserts that
+# redact_token() scrubs an API key from an error message before it reaches a
+# log — it necessarily contains something token-shaped to redact. The value
+# is a synthetic placeholder (the alphabet), not a real credential:
+#   sk-proj-abcdefghijklmnopqrstuvwxyz123456
+
+apps/artifice-transcribe/tests/test_download.py:generic-api-key:442
