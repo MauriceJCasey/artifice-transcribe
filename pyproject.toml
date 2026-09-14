@@ -57,6 +57,9 @@ artifice-shared-ui = { workspace = true }
 
 [dependency-groups]
 dev = [
+    "fonttools[woff]>=4.63.0",
+    "hypothesis>=6.138.0",
+    "playwright>=1.55.0",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
     "pytest-httpx>=0.36.2",
@@ -72,3 +75,12 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+markers = [
+    "live_smoke: live smoke test requiring a running Ollama server (run with --live-smoke)",
+    "live_interop: opt-in test requiring a real third-party desktop application",
+    "ui_stress: deterministic browser and state-machine stress tests",
+]
+addopts = "--import-mode=importlib -m 'not live_smoke and not live_interop and not ui_stress'"

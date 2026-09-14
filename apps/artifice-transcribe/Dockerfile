@@ -10,9 +10,6 @@ WORKDIR /app
 
 # Layer 1 — dependency resolution (cached unless lock, a pyproject.toml, or packages/ changes)
 COPY pyproject.toml uv.lock ./
-COPY apps/artifice-ocr/pyproject.toml        apps/artifice-ocr/
-COPY apps/artifice-draft/pyproject.toml      apps/artifice-draft/
-COPY apps/artifice-graph/pyproject.toml      apps/artifice-graph/
 COPY apps/artifice-transcribe/pyproject.toml apps/artifice-transcribe/
 COPY packages/ packages/
 RUN uv sync --locked --no-install-project --package artifice-transcribe
