@@ -1,0 +1,84 @@
+<!-- SPDX-FileCopyrightText: 2026 Maurice Casey
+   -
+   - SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+{% extends "base.html" %}
+{% block title %}ArtificeTranscribe — About{% endblock %}
+
+{% block content %}
+<main class="page page-prose" id="main-content">
+  <header class="masthead">
+    <span class="label">Speech-to-text &middot; diarization &middot; oral history</span>
+    <h1>About ArtificeTranscribe</h1>
+    <hr class="masthead-rule">
+  </header>
+
+  <p>
+    ArtificeTranscribe turns an audio or video recording into an editable,
+    speaker-labelled transcript &mdash; the workflow an oral history project
+    needs, running entirely on your own machine. Drop in a file, and Whisper
+    (via WhisperX) transcribes it while pyannote separates who spoke when;
+    the result is a segment-by-segment transcript you can correct, name, and
+    export in the formats an archive expects.
+  </p>
+
+  <h2 class="section-head">What a recording goes through</h2>
+  <ol>
+    <li><strong>Transcribe</strong> &mdash; a Whisper model (tiny through
+        large-v3, chosen in Settings &middot; Models) turns speech into
+        timestamped text.</li>
+    <li><strong>Diarize</strong> &mdash; pyannote segments the audio by
+        speaker and aligns each word to a speaker turn, honouring a min/max
+        speaker count if you know it in advance.</li>
+    <li><strong>Identify</strong> &mdash; name each detected speaker, or
+        match against speakers already enrolled from an earlier recording so
+        recurring interviewees don't have to be renamed every session.</li>
+    <li><strong>Edit &amp; export</strong> &mdash; correct segments in place,
+        with diff and edit history behind every change, then export as
+        JSON, SRT, VTT, TXT, Markdown, PDF, OHMS or TEI.</li>
+  </ol>
+
+  <h2 class="section-head">Vocabulary and known speakers</h2>
+  <p>
+    The Dictionary tab holds a persistent list of proper nouns, jargon and
+    place names that gets merged into every transcription as hotwords, so
+    project-specific terms don't have to be corrected by hand each time. A
+    short enrollment clip teaches the app a speaker's voice once; later
+    recordings can then be matched against that voice rather than
+    re-identified from scratch.
+  </p>
+
+  <h2 class="section-head">Interview metadata and text tools</h2>
+  <p>
+    Each transcript carries its own interviewee, interviewer, date,
+    location, project and collection fields, plus an access note, alongside
+    the transcript itself. Optional BYOM text tools &mdash; using any
+    OpenAI-compatible endpoint, local or cloud &mdash; can summarise or
+    clean up a finished transcript on request; it never touches the
+    transcription or diarization models themselves.
+  </p>
+
+  <h2 class="section-head">Design language</h2>
+  <p>
+    This interface implements <strong>The New Masses</strong> design system:
+    an offline-first, print-inflected editorial aesthetic with warm paper
+    surfaces, a muted violet accent, and fluid serif typography. All design
+    tokens are served from the shared
+    <code>packages/shared-ui/shared_ui/assets/tokens.css</code>; never
+    hardcode colours or spacing.
+  </p>
+
+  <h2 class="section-head">Run it</h2>
+  <p>
+    From the project root:
+  </p>
+  <pre class="mono">pip install -e ".[web]"
+artifice-transcribe
+# &rarr; http://localhost:8000</pre>
+
+  <p class="foot">
+    ArtificeTranscribe &middot; an Artifice platform &middot; FastAPI + Jinja2 &middot; vanilla JS.
+  </p>
+</main>
+{% endblock %}

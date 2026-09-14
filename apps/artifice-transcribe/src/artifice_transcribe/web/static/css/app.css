@@ -1,0 +1,1748 @@
+/* SPDX-FileCopyrightText: 2026 Maurice Casey
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+/*
+  The New Masses Design System — ArtificeTranscribe
+  Derived from E:\Claude Sandbox\ArtificeTranscribe\Design_Philosophy.md
+*/
+
+/* ── App Accent Identity — Violet ──────────────────── */
+:root {
+  --accent: #715993;
+  --accent-deep: #584179;
+  --accent-wash: rgba(113, 89, 147, 0.07);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --accent: #9178b4;
+    --accent-deep: #ac92d0;
+    --accent-wash: rgba(145, 120, 180, 0.12);
+  }
+}
+[data-theme="dark"] {
+  --accent: #9178b4;
+  --accent-deep: #ac92d0;
+  --accent-wash: rgba(145, 120, 180, 0.12);
+}
+
+/* Canonical design tokens (paper/ink, accent, semantic status colours,
+   typography, fluid type scale, shadows, radius scale, spacing, motion,
+   layout) are served by packages/shared-ui at /shared/tokens.css and
+   linked in base.html before this file — see Design_Philosophy.md §12
+   "Token Architecture". Do not re-declare any canonical token here — this
+   app has no domain-specific token of its own. The app-local --font-sans
+   token has been retired; the app now uses the canonical --font-label
+   declared in shared-ui. */
+
+/* ---------------------------------------------------------------- reset */
+
+* { box-sizing: border-box; }
+
+.hidden { display: none !important; }
+
+html {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-label);
+  font-size: var(--text-base);
+  line-height: 1.75;
+}
+
+button, input, select, textarea { font-family: inherit; font-size: inherit; }
+
+/* -------------------------------------------------------------- layout */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.2rem;
+  padding: 0 var(--space-6);
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper-raised);
+}
+
+.tab {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: var(--space-4) var(--space-6);
+  font-family: var(--font-label);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color var(--duration-fast) ease, border-color var(--duration-fast) ease;
+}
+
+.tab:hover { color: var(--ink); }
+
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.panels { flex: 1; overflow: hidden; position: relative; }
+
+.panel {
+  display: none;
+  height: 100%;
+  overflow: auto;
+  padding: 1.25rem 1.4rem;
+}
+
+.panel.active { display: block; }
+
+.panel-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 40%;
+  font-family: var(--font-body);
+  text-align: center;
+  max-width: 30rem;
+  margin: 0 auto;
+  gap: var(--space-2);
+}
+
+/* Design_Philosophy.md §8 / design-system/components/feedback/EmptyState —
+   title + description, plain and marginal-note in tone, no illustration.
+   Used for document/detail panels with nothing loaded yet (e.g.
+   #transcript-empty). */
+.panel-empty-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-lg);
+  color: var(--ink);
+}
+.panel-empty-desc {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink-faint);
+}
+
+/* Table-context empty state — wraps panel-empty-title / panel-empty-desc inside
+   a <td> without breaking table semantics. The panel-empty component is built
+   for div/section context; these declarations adapt its two sub-elements to
+   display as block inside a cell and add the centering that was previously
+   achieved with a disallowed inline style="text-align:center;". */
+.table-empty-cell {
+  text-align: center;
+  padding: var(--space-6) var(--space-4);
+}
+.table-empty-cell .panel-empty-title,
+.table-empty-cell .panel-empty-desc {
+  display: block;
+}
+
+/* --------------------------------------------------------------- cards */
+
+.card {
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-paper);
+  transition: transform var(--duration-normal) var(--ease-primary),
+              box-shadow var(--duration-normal) ease,
+              border-color var(--duration-normal) ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: var(--rule-dark);
+  box-shadow: var(--shadow-lifted);
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem var(--space-6) 0.5rem;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.card-head h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-h3);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.dim { color: var(--ink-faint); font-size: var(--text-sm); }
+
+/* -------------------------------------------------------------- drop zone */
+
+.dropzone {
+  margin: 1rem var(--space-6) 0;
+  border: 1px dashed var(--rule-dark);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem var(--space-6);
+  text-align: center;
+  color: var(--ink-faint);
+  cursor: pointer;
+  transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease, color var(--duration-fast) ease;
+}
+
+.dropzone:hover, .dropzone.drag {
+  background: var(--accent-wash);
+  border-color: var(--accent);
+  color: var(--accent-deep);
+}
+
+.dropzone .picked {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* Set alongside the disabling of #file-input when GET /api/v1/capabilities
+   reports asr.available === false (see app.js applyCapabilities). Overrides
+   the accent hover/drag treatment above so the zone reads as inert rather
+   than merely quiet — drop/click are guarded in JS regardless, this is the
+   visible half of that state. */
+.dropzone-disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.dropzone-disabled:hover, .dropzone-disabled.drag {
+  background: none;
+  border-color: var(--rule-dark);
+  color: var(--ink-faint);
+}
+
+/* --------------------------------------------------- ASR unavailable notice */
+
+/* Shown when the base install (no PyTorch/CUDA, see
+   .briefs/ui-ux-asr-unavailable-state.md) reports asr.available === false.
+   A status surface, not an error: paper-recessed + ink-soft is the same
+   inset-panel idiom already used for #model-guide-panel and the BYOM note
+   in Settings below, and deliberately avoids --accent (reserved for
+   interactive affordances, Design_Philosophy.md "Color Usage Rules") and
+   any red/error token, since nothing here is broken. No motion — the state
+   is constant for the session, not a transient status change. */
+/* Capped to the suite's prose measure (see prose.css) so the reason and the
+   command row read as one unit inside a full-width card. .byom-code is
+   `flex: 1` with no intrinsic width limit of its own (byom.css) — it only
+   looked correct in the ~700px BYOM modal it was designed for; inherited
+   into a full-width card it stretched to 2340px for a 19-character command,
+   leaving COPY ~2300px from the text it belongs to. This value is set here,
+   not on byom.css, per scope — it constrains the container, not the
+   pattern it reuses. */
+.asr-unavailable {
+  margin: 1rem var(--space-6) 0;
+  padding: var(--space-5) var(--space-6);
+  max-width: 44rem;
+  background: var(--paper-recessed);
+  border-left: 3px solid var(--ink-soft);
+  border-radius: var(--radius-sm);
+}
+
+/* Used inline within an already-padded panel (Settings, the Speakers form)
+   rather than a top-level card child, so it takes the panel's own padding
+   instead of re-asserting --space-6 gutters. Text-only: no code row, to
+   avoid repeating the same install command in three places on one page —
+   the Transcribe tab's copy of it is the canonical one. */
+.asr-unavailable.compact {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+}
+
+.asr-unavailable-text {
+  margin: 0 0 var(--space-3);
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.asr-unavailable.compact .asr-unavailable-text { margin: 0; }
+
+.asr-unavailable .byom-code-row { margin: 0; }
+
+/* The copy button's accessible name is fixed ("Copy install command", set
+   via aria-label so it doesn't change when the visible "Copy"/"Copied"
+   label text does — same reasoning as .byom-copy in shared-ui/byom.js).
+   That means success/failure needs its own announcement; #asr-copy-status
+   is the aria-live region app.js writes to for that, visually hidden. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --------------------------------------------------------------- form rows */
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 0.75rem var(--space-6);
+  flex-wrap: wrap;
+}
+
+.form-row label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+/* Field labels (Design_Philosophy.md §3): a short name for a control
+   ("Min speakers:", "Model:", "Base URL:") takes the label treatment
+   (Archivo, uppercase, --label-tracking) instead of rendering at
+   sentence case. Labels with a `for` attribute are excluded — every
+   .form-row checkbox label in this app ("Cache alignment models across
+   sessions", "Vision / Multimodal Enabled…") uses `for` rather than
+   wrapping its input, and reads as a sentence describing the toggle, not
+   a field name (§3: "body text and titles are never uppercase"). */
+.form-row label:not([for]) {
+  font-family: var(--font-label);
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+}
+
+.form-row input[type=text], .form-row input[type=number], .form-row input[type=password], .form-row select, .form-row textarea {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  background: var(--paper-recessed);
+  color: var(--ink);
+  padding: var(--space-4) var(--space-5);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  /* Reset the label's uppercase/tracking so it doesn't bleed into the
+     select's own rendered option text or an input's typed value — several
+     of these controls (Language, Vocabulary, Interviewee…) hold free text
+     a user types, which must not render shouted. */
+  text-transform: none;
+  letter-spacing: normal;
+  transition: border-color var(--duration-instant) ease, outline var(--duration-instant) ease;
+}
+
+/* §8.3 row-alignment: inputs and selects in form-row share rows with buttons.
+   Textareas are excluded — they are multi-line paste targets. */
+.form-row input[type=text]:not([size]), .form-row input[type=password], .form-row input[type=number], .form-row select {
+  min-height: var(--control-height);
+}
+
+.form-row input[type=number] { width: 4.5rem; }
+
+/* Language and Vocabulary options (index.html #opt-language, #opt-vocabulary)
+   previously carried a fixed inline `width` short enough to clip their own
+   placeholder text ("auto-detect" -> "auto-de", "names, terms, places..."
+   -> "names, terms, places.."). `min-width` keeps the full placeholder
+   visible while still letting .form-row's flex-wrap reflow the row at
+   narrow viewports, which a fixed `width` would not. */
+.form-row .opt-input-lang { min-width: 9rem; }
+.form-row .opt-input-vocab { min-width: 17rem; }
+
+.input {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  padding: var(--space-4) var(--space-5);
+  background-color: var(--paper-recessed);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  transition: border-color var(--duration-instant) ease;
+}
+.input:focus, .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-color: var(--accent);
+}
+
+/* ------------------------------------------------------------------ toolbar & buttons */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: 0.75rem var(--space-6);
+}
+
+.toolbar .spacer { flex: 1; }
+
+button.btn, .button-primary {
+  appearance: none;
+  border: 1.5px solid var(--ink);
+  background: var(--paper-raised);
+  color: var(--ink);
+  border-radius: var(--radius-md);
+  /* Design_Philosophy.md §8.1 button padding, applied literally rather
+     than the smaller ad hoc value this rule used to carry — see the
+     app.css header note on control-height parity. line-height is pinned
+     to 1 because some .btn labels mix Latin text with a Unicode dingbat
+     (e.g. "&#9654; Start Transcription"); with the default
+     `line-height: normal` the browser falls back to a different font for
+     the glyph and that font's own line metrics inflate the button's line
+     box a few px relative to a glyph-free sibling button. */
+  padding: 0.8rem 1.4rem;
+  /* §8.3 row-alignment: buttons that share a row with inputs/selects must
+     resolve to --control-height. .btn.tiny is exempt — see below. */
+  min-height: var(--control-height);
+  line-height: 1;
+  font-family: var(--font-label);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--paper-recessed);
+  transition: background-color var(--duration-normal) ease, color var(--duration-normal) ease,
+              box-shadow var(--duration-normal) ease, transform var(--duration-normal) ease;
+}
+
+button.btn:hover:not(:disabled), .button-primary:hover:not(:disabled) {
+  background-color: var(--ink);
+  color: var(--paper-raised);
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--accent);
+  border-color: var(--ink);
+}
+
+button.btn:active:not(:disabled), .button-primary:active:not(:disabled) {
+  transform: translate(0, 0);
+  box-shadow: 2px 2px 0 var(--accent);
+}
+
+button.btn:disabled, .button-primary:disabled {
+  color: var(--ink-faint);
+  background: var(--paper-recessed);
+  border-color: var(--rule);
+  cursor: default;
+  opacity: 0.55;
+  box-shadow: none;
+  transform: none;
+}
+
+button.btn.accent {
+  background: var(--accent);
+  border-color: var(--accent-deep);
+  color: var(--paper);
+  box-shadow: 3px 3px 0 var(--paper-recessed);
+}
+button.btn.accent:hover:not(:disabled) {
+  background: var(--accent-deep);
+  color: var(--paper);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+button.btn.danger { color: var(--error); border-color: var(--error); }
+button.btn.danger:hover:not(:disabled) { background: var(--error); color: var(--paper); border-color: var(--error); box-shadow: 4px 4px 0 var(--ink); }
+
+/* --------------------------------------------------------------------- table */
+
+.queue-wrap {
+  margin: 0 var(--space-6) 0.75rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  overflow: auto;
+  max-height: 42vh;
+  background: var(--paper-raised);
+}
+
+table.queue {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+table.queue thead th {
+  position: sticky;
+  top: 0;
+  background: var(--paper);
+  color: var(--ink-faint);
+  font-weight: 600;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  font-size: var(--text-xs);
+  text-align: left;
+  padding: var(--space-4) 0.9rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+table.queue th.c, table.queue td.c { text-align: center; }
+
+table.queue tbody td {
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+
+table.queue tbody tr:last-child td { border-bottom: none; }
+table.queue tbody tr.clickable { cursor: pointer; }
+table.queue tbody tr.clickable:hover { background: var(--accent-wash); }
+table.queue tbody tr.selected { background: var(--accent-wash); }
+
+.status-pill {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+}
+.status-pill.queued { background: var(--rule); color: var(--ink-faint); }
+.status-pill.processing { background: var(--accent-wash); color: var(--accent-deep); }
+.status-pill.completed { background: var(--accent-wash); color: var(--accent-deep); }
+.status-pill.failed { background: rgba(154, 51, 36, 0.14); color: var(--error); }
+
+/* --------------------------------------------------------------- progress */
+
+.progress-wrap {
+  margin: 0 var(--space-6) 1rem;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--rule);
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  transition: width var(--duration-normal) var(--ease-primary);
+}
+
+.mini-progress {
+  width: 5rem;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: var(--rule);
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: middle;
+}
+.mini-progress > div {
+  height: 100%;
+  background: var(--accent);
+  transition: width var(--duration-normal) var(--ease-primary);
+}
+
+/* --------------------------------------------------------------- status bar */
+
+.statusbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem var(--space-6);
+  border-top: 1px solid var(--rule);
+  background: var(--paper-raised);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--rule); border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); }
+
+/* ============================================================ TRANSCRIPT VIEW */
+
+.transcript-card {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) 2fr;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas: "audio bar" "audio segments" "audio stats";
+  padding-bottom: 0.6rem;
+}
+
+.audio-pane {
+  grid-area: audio;
+  border-right: 1px solid var(--rule);
+  min-width: 0;
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.audio-pane audio {
+  width: 100%;
+}
+
+.speaker-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.speaker-form h3 {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 0 0 0.2rem;
+}
+
+.speaker-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.speaker-row .speaker-swatch {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.speaker-row input[type=text] {
+  flex: 1;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  background: var(--paper-recessed);
+  color: var(--ink);
+  padding: 0.35rem 0.5rem;
+  min-width: 0;
+}
+
+.export-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: auto;
+}
+
+.transcript-bar {
+  grid-area: bar;
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: 1rem var(--space-6) 0.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.transcript-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-h3);
+  margin: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.segments {
+  grid-area: segments;
+  overflow: auto;
+  padding: 0.5rem var(--space-6) 1rem;
+  min-height: 0;
+}
+
+.segment {
+  display: flex;
+  gap: 0.8rem;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--duration-fast) ease;
+  border-left: 3px solid transparent;
+}
+
+.segment:hover { background: var(--accent-wash); }
+.segment.active { background: var(--accent-wash); }
+.segment.speaker-border { border-left-color: var(--speaker-color); }
+
+.segment .seg-time {
+  flex-shrink: 0;
+  width: 3.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  padding-top: 0.2rem;
+}
+
+.segment .seg-body { flex: 1; min-width: 0; }
+
+.segment .seg-speaker {
+  font-family: var(--font-label);
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+.segment .seg-text {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.75;
+}
+
+.segment .seg-text[contenteditable] {
+  outline: none;
+  border-radius: 3px;
+  padding: 0.1rem 0.2rem;
+  transition: background var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+}
+.segment .seg-text[contenteditable]:focus {
+  background: var(--accent-wash);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.segment.edited {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.seg-edited-badge {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--accent);
+  opacity: 0.7;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  padding-top: 0.15rem;
+  flex-shrink: 0;
+}
+
+/* diff view */
+
+.segment.diff-active .seg-text { font-size: 0.9rem; }
+.diff-del {
+  background: rgba(154, 51, 36, 0.15);
+  text-decoration: line-through;
+  color: var(--error);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+.diff-add {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent-deep);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+/* edit toolbar */
+
+.edit-toolbar {
+  display: flex;
+  gap: 0.3rem;
+  margin-left: auto;
+}
+.edit-toolbar .btn.active {
+  background: var(--accent-wash);
+  border-color: var(--accent);
+  color: var(--accent-deep);
+}
+
+/* =================================================== RESPONSIVE BREAKPOINTS */
+
+@media (max-width: 900px) {
+  .transcript-card {
+    grid-template-columns: 1fr;
+    grid-template-areas: "bar" "audio" "segments" "stats";
+  }
+  .audio-pane { border-right: none; border-bottom: 1px solid var(--rule); }
+}
+
+@media (max-width: 600px) {
+  .panel { padding: 0.75rem 0.8rem; }
+  .tabs { padding: 0 0.5rem; }
+  .tab { padding: 0.6rem 0.7rem; font-size: 0.78rem; }
+  .queue-wrap { max-height: 30vh; }
+  .form-row { gap: 0.6rem; }
+}
+
+.model-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  background: var(--paper-recessed);
+  border: 1px solid var(--rule);
+}
+
+/* ── health indicator ─────────────────────────────────────────── */
+
+.health-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+
+.health-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--ink-faint);
+  transition: background 0.3s;
+}
+.health-dot.ok { background: #28a745; }
+.health-dot.warn { background: #ffc107; }
+.health-dot.error { background: #dc3545; }
+
+.btn.tiny {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.72rem;
+  border: 1px solid var(--rule);
+  background: var(--paper-raised);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  box-shadow: 2px 2px 0 var(--paper-recessed);
+  text-transform: uppercase;
+  letter-spacing: var(--label-tracking);
+  font-weight: 600;
+  /* Exempt from §8.3 row-alignment — dense secondary UI, reviewed and kept
+     compact in an earlier pass. */
+  min-height: unset;
+}
+.btn.tiny:hover { background: var(--accent-wash); border-color: var(--accent); color: var(--accent-deep); }
+
+/* ── health detail panel ───────────────────────────────────────── */
+
+.health-panel {
+  padding: 0 1rem 0.5rem;
+}
+.health-panel .card { margin: 0; }
+
+.health-grid {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.health-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  align-items: center;
+  padding: 0.3rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--paper-recessed);
+  font-size: 0.82rem;
+}
+
+.health-label {
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.health-value {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+.health-status {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--ink-faint);
+}
+.health-status.ok { background: #28a745; }
+.health-status.warn { background: #ffc107; }
+.health-status.error { background: #dc3545; }
+.health-status.untested { background: var(--ink-faint); }
+
+/* ── health error box ─────────────────────────────────────────── */
+
+.health-error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: 0.5rem 0.7rem;
+  margin-bottom: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  font-size: 0.8rem;
+  color: var(--error);
+}
+.health-error.hidden { display: none; }
+
+.health-error-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-full);
+  background: var(--error);
+  color: var(--paper);
+  font-weight: 700;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.health-error-text {
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+/* ── load models button loading state ─────────────────────────── */
+
+.btn.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+.btn.loading::after {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-left: 0.4rem;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: var(--radius-full);
+  animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── job error message in library table ───────────────────────── */
+
+.job-error-msg {
+  margin-top: var(--space-2);
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--radius-sm);
+  background: rgba(220, 53, 69, 0.08);
+  color: var(--error);
+  font-size: 0.72rem;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+/* ── masthead search ──────────────────────────────────────────── */
+
+.masthead-search {
+  margin-left: auto;
+}
+.search-input {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  background: var(--paper-recessed);
+  color: var(--ink);
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+  width: 14rem;
+  transition: border-color var(--duration-instant) ease, box-shadow var(--duration-instant) ease;
+}
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* ── metadata form ────────────────────────────────────────────── */
+
+.metadata-form {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  padding: 0.75rem 0.9rem;
+  background: var(--paper-raised);
+  font-size: var(--text-sm);
+}
+.metadata-form summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--ink-soft);
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  font-size: var(--text-xs);
+}
+.metadata-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+.metadata-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  font-weight: 600;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+}
+.metadata-grid input {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  background: var(--paper-recessed);
+  color: var(--ink);
+  padding: 0.3rem 0.5rem;
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  /* .metadata-grid label is already uppercase/tracked (existing rule
+     below); without this reset that bled into typed values here, so an
+     interviewee's name rendered shouted while being typed. Pre-existing,
+     found while fixing the same bleed pattern for .form-row above. */
+  text-transform: none;
+  letter-spacing: normal;
+}
+#btn-save-metadata {
+  margin-top: var(--space-3);
+}
+
+/* ── waveform canvas ──────────────────────────────────────────── */
+
+#waveform-canvas {
+  display: block;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  background: var(--paper-recessed);
+}
+
+/* ── segment tags ─────────────────────────────────────────────── */
+
+.seg-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+.seg-tag {
+  display: inline-block;
+  padding: 0.05rem 0.4rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  background: var(--accent-wash);
+  color: var(--accent-deep);
+  cursor: pointer;
+  border: none;
+}
+.seg-tag:hover {
+  opacity: 0.8;
+}
+.seg-tag-add {
+  background: transparent;
+  border: 1px dashed var(--rule-dark);
+  color: var(--ink-faint);
+  font-size: 0.65rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.seg-tag-add:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ── search results modal ─────────────────────────────────────── */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(27, 24, 19, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.hidden { display: none; }
+.modal {
+  width: min(90vw, 580px);
+  max-height: 70vh;
+  overflow: auto;
+  background: var(--paper-raised);
+  border-top: 4px solid var(--accent);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-modal);
+  animation: modalRise var(--duration-normal) var(--ease-primary) forwards;
+}
+
+@keyframes modalRise {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal .card { margin: 0; border: none; box-shadow: none; background: transparent; }
+
+.search-results-list {
+  padding: 0.5rem 0.7rem;
+}
+.search-result-item {
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.3rem;
+  cursor: pointer;
+  transition: background var(--duration-fast) ease;
+}
+.search-result-item:hover { background: var(--accent-wash); }
+.search-result-item:last-child { margin-bottom: 0; }
+.search-result-meta {
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.2rem;
+}
+.search-result-text {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.search-result-text .hl {
+  background: rgba(191, 155, 48, 0.25);
+  padding: 0 1px;
+  border-radius: 2px;
+}
+
+/* ── history panel ──────────────────────────────────────────── */
+
+.history-panel {
+  margin-top: var(--space-3);
+}
+.history-panel .card { margin: 0; }
+.history-list {
+  padding: 0.5rem 0.7rem;
+  max-height: 30vh;
+  overflow: auto;
+}
+.history-version {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.82rem;
+}
+.history-version:last-child { border-bottom: none; }
+.history-version .hist-time {
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  margin-bottom: 0.2rem;
+}
+.history-version .hist-before {
+  color: var(--error);
+  text-decoration: line-through;
+  opacity: 0.8;
+}
+.history-version .hist-after {
+  color: var(--accent-deep);
+}
+
+/* ── in-transcript search highlight ────────────────────────── */
+
+.seg-text .search-hl {
+  background: rgba(191, 155, 48, 0.3);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+/* ── metadata badge in transcript bar ─────────────────────── */
+
+.meta-badge {
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 20rem;
+}
+.meta-badge::before { content: '\2014\00a0'; }
+
+/* ── transcript stats footer ──────────────────────────────── */
+
+.transcript-stats {
+  grid-area: stats;
+  padding: 0.25rem var(--space-6) 0.5rem;
+  font-size: 0.72rem;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-faint);
+}
+
+/* ── keyboard shortcut hint ──────────────────────────────── */
+
+.kbd {
+  display: inline-block;
+  padding: 0.08rem 0.35rem;
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  background: var(--paper-recessed);
+  color: var(--ink-faint);
+}
+
+/* ── metadata in library table ─────────────────────────────── */
+
+table.queue td.meta-cell {
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+/* ── Focus & Accessibility ─────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 600;
+  padding: 0.6rem var(--space-6);
+  background-color: var(--ink);
+  color: var(--paper-raised);
+  font-family: var(--font-label);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  transform: translateY(-150%);
+  transition: transform var(--duration-fast) ease;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lifted);
+  text-decoration: none;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* ── Photographic Images Treatment ──────────────────────────── */
+
+.photo {
+  filter: grayscale(100%) sepia(14%);
+  transition: filter 0.45s ease, transform 0.45s ease;
+}
+.photo:hover {
+  filter: none;
+  transform: scale(1.04);
+}
+@media (prefers-color-scheme: dark) {
+  .photo { filter: grayscale(100%) sepia(14%) brightness(0.88); }
+}
+
+/* ── Reduced Motion ────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  section {
+    opacity: 1 !important;
+  }
+}
+
+/* ── responsive: collapse metadata grid ────────────────────── */
+
+@media (max-width: 700px) {
+  .metadata-grid { grid-template-columns: 1fr; }
+  .masthead-search { display: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ASR MODEL DOWNLOAD CONSENT DIALOG
+
+   Design_Philosophy.md §8.6 (modals) + §8.16 (progress bar).
+   A consent surface, not a progress bar with a button — the point is an
+   informed, revocable decision, not throughput.
+
+   States:
+     consent-view   — full disclosure, Download / Cancel
+     token-view     — token required and not set, Supply Token / Cancel
+     downloading    — SSE live, progress bars, Stop
+     stopping       — cancelling event received, "Stopping…" (NOT "Cancelled"),
+                      Stop disabled
+     completed      — all done, Done
+     error-view     — persistent error, Retry / Close
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Overlay ─────────────────────────────────────────────────────────────── */
+
+#download-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(27, 24, 19, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#download-modal-overlay.hidden { display: none; }
+
+/* ── Dialog box ─────────────────────────────────────────────────────────── */
+
+#download-modal {
+  background: var(--paper-raised);
+  border-top: 4px solid var(--accent);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-modal);
+  width: min(92vw, 540px);
+  max-height: 88vh;
+  overflow-y: auto;
+  animation: modalRise var(--duration-normal) var(--ease-primary) forwards;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
+#dlg-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-6) var(--space-4);
+  border-bottom: 1px solid var(--rule);
+}
+
+#dlg-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-h3);
+  margin: 0;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+#dlg-subtitle {
+  font-family: var(--font-label);
+  font-size: var(--text-xs);
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: var(--space-2) 0 0;
+}
+
+/* ── Close button (icon-only, 44px target) ─────────────────────────────── */
+
+#dlg-close {
+  appearance: none;
+  flex: 0 0 auto;
+  width: var(--control-height);
+  height: var(--control-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--ink-faint);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) ease,
+              color var(--duration-fast) ease,
+              border-color var(--duration-fast) ease;
+}
+#dlg-close:hover {
+  background-color: var(--accent-wash);
+  border-color: var(--accent);
+  color: var(--accent-deep);
+}
+#dlg-close:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ── Body ───────────────────────────────────────────────────────────────── */
+
+#dlg-body {
+  padding: var(--space-5) var(--space-6);
+}
+
+/* ── Consent info rows ──────────────────────────────────────────────────── */
+
+.dlg-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-4);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--rule);
+}
+.dlg-info-row:last-child { border-bottom: none; }
+.dlg-info-label {
+  font-family: var(--font-label);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  flex-shrink: 0;
+}
+.dlg-info-value {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--ink);
+  text-align: right;
+  word-break: break-all;
+}
+.dlg-info-value.mono {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+/* Total size — larger, accent-adjacent */
+#dlg-total-size {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* ── Model breakdown list ────────────────────────────────────────────────── */
+
+#dlg-model-list {
+  margin-top: var(--space-4);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.dlg-model-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+}
+.dlg-model-item:last-child { border-bottom: none; }
+
+.dlg-model-name {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--ink);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dlg-model-name code {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  background: var(--paper-recessed);
+  padding: 0.1rem 0.3rem;
+  border-radius: 2px;
+}
+
+.dlg-model-size {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+  flex-shrink: 0;
+}
+
+.dlg-model-badge {
+  font-family: var(--font-label);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+.dlg-model-badge.dep {
+  background: var(--accent-wash);
+  color: var(--accent-deep);
+}
+.dlg-model-badge.main {
+  background: var(--paper-recessed);
+  color: var(--ink-soft);
+  border: 1px solid var(--rule);
+}
+
+/* ── Cache directory ─────────────────────────────────────────────────────── */
+
+#dlg-cache-dir {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--paper-recessed);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--ink-faint);
+}
+#dlg-cache-dir p {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-label);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+#dlg-cache-dir code {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--ink);
+  word-break: break-all;
+}
+
+/* ── Token input ─────────────────────────────────────────────────────────── */
+
+#dlg-token-section {
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  background: var(--paper-recessed);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--warning);
+}
+
+#dlg-token-section h4 {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-label);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  color: var(--warning);
+}
+
+#dlg-token-section p {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+#dlg-token-section p a {
+  color: var(--accent);
+}
+
+#dlg-token-input {
+  width: 100%;
+  padding: var(--space-4) var(--space-5);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  box-sizing: border-box;
+  transition: border-color var(--duration-instant) ease;
+}
+#dlg-token-input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-color: var(--accent);
+}
+
+/* ── Error notice (persistent, not toast) ─────────────────────────────── */
+
+#dlg-error-box {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  margin-top: var(--space-4);
+  background: rgba(168, 50, 43, 0.07);
+  border: 1px solid rgba(168, 50, 43, 0.25);
+  border-radius: var(--radius-md);
+}
+#dlg-error-box.hidden { display: none; }
+
+#dlg-error-icon {
+  flex: 0 0 auto;
+  color: var(--error);
+  margin-top: 0.1rem;
+}
+
+#dlg-error-text {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--error);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+/* ── Progress section ─────────────────────────────────────────────────────── */
+
+#dlg-progress-section {
+  margin-top: var(--space-5);
+}
+#dlg-progress-section.hidden { display: none; }
+
+#dlg-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-3);
+}
+#dlg-progress-label {
+  font-family: var(--font-label);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+#dlg-progress-pct {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+/* Overall bar */
+#dlg-overall-bar {
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--rule);
+  overflow: hidden;
+  margin-bottom: var(--space-4);
+}
+#dlg-overall-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  transition: width 0.6s var(--ease-primary);
+}
+
+/* Per-model bars */
+#dlg-model-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.dlg-model-bar-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.dlg-model-bar-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+.dlg-model-bar-label {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--ink);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dlg-model-bar-label code {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+.dlg-model-bar-pct {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+  flex-shrink: 0;
+}
+
+.dlg-model-bar-track {
+  height: 3px;
+  border-radius: var(--radius-full);
+  background: var(--rule);
+  overflow: hidden;
+}
+.dlg-model-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.6s var(--ease-primary);
+}
+
+/* Byte counter */
+#dlg-bytes-row {
+  text-align: center;
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+}
+
+/* ── Footer actions ──────────────────────────────────────────────────────── */
+
+#dlg-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6) var(--space-5);
+  border-top: 1px solid var(--rule);
+}
+
+/* ── Inline state messages ───────────────────────────────────────────────── */
+
+#dlg-state-message {
+  padding: 0 0 var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+#dlg-state-message.hidden { display: none; }
+#dlg-state-message.stopping { color: var(--warning); }
+#dlg-state-message.completed { color: var(--success); }
+#dlg-state-message.error-state { color: var(--error); }
+
+/* ── Spinner ─────────────────────────────────────────────────────────────── */
+
+@keyframes dlg-spin { to { transform: rotate(360deg); } }
+.dlg-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(27,24,19,0.2);
+  border-top-color: var(--ink-faint);
+  border-radius: var(--radius-full);
+  animation: dlg-spin 0.6s linear infinite;
+  vertical-align: middle;
+  margin-right: var(--space-2);
+}
+
+/* ── Accessible live region ───────────────────────────────────────────────── */
+
+/* Visually hidden but announced by screen readers at meaningful intervals */
+#dlg-live-region {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  #download-modal { width: 98vw; }
+  #dlg-body { padding: var(--space-4) var(--space-5); }
+  #dlg-header { padding: var(--space-5) var(--space-5) var(--space-4); }
+  #dlg-footer { padding: var(--space-4) var(--space-5) var(--space-4); flex-wrap: wrap; }
+}

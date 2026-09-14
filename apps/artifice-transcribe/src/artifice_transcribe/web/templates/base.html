@@ -1,0 +1,34 @@
+{# SPDX-FileCopyrightText: 2026 Maurice Casey #}
+{# SPDX-License-Identifier: AGPL-3.0-or-later #}
+{% extends "_app_shell.html" %}
+
+{% block head %}
+  <link rel="icon" type="image/svg+xml" href="/shared/logos/artifice-transcribe-mark.svg?v={{ asset_v }}">
+  <link rel="apple-touch-icon" href="/shared/logos/artifice-transcribe.png">
+  <link rel="stylesheet" href="/shared/prose.css?v={{ asset_v }}">
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_v }}">
+  <link rel="stylesheet" href="/shared/byom.css?v={{ asset_v }}">
+  <link rel="stylesheet" href="/shared/toast.css?v={{ asset_v }}">
+  {% block app_head %}{% endblock %}
+{% endblock %}
+
+{% block workspace %}
+<div class="masthead-search" id="masthead-search"><input type="text" id="global-search-input" placeholder="Search transcripts (/)" class="search-input"></div>
+<div class="app">{% block content %}{% endblock %}</div>
+{% endblock %}
+
+{% block activity %}<p class="activity-empty">Transcription, diarisation, and export progress appear here.</p>{% endblock %}
+
+{% block scripts %}
+<script src="/shared/byom.js?v={{ asset_v }}"></script>
+<script src="/shared/toast.js?v={{ asset_v }}"></script>
+<script src="/shared/bind.js?v={{ asset_v }}"></script>
+<script src="/static/js/app.js?v={{ asset_v }}"></script>
+<script>
+(function () {
+  "use strict";
+  var byom = window.ArtificeByom.autostart({ appName: "ArtificeTranscribe", onConfigured: function () { byom.close(); } });
+})();
+</script>
+{% block app_scripts %}{% endblock %}
+{% endblock %}

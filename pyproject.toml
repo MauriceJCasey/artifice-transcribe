@@ -1,0 +1,74 @@
+[project]
+name = "artifice-transcribe-workspace"
+version = "0.1.0"
+description = "Workspace root for Artifice Transcribe and its shared support packages."
+requires-python = ">=3.11"
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
+dependencies = []
+
+[project.optional-dependencies]
+transcribe = ["artifice-transcribe", "artifice-model-harness>=0.2.0", "artifice-shared-ui>=0.2.0"]
+# `--extra asr` installs WhisperX + PyAnnote (CPU torch); `--extra asr-cuda`
+# selects the CUDA build instead. See apps/artifice-transcribe/pyproject.toml
+# for why these can never be combined and why the package list is duplicated.
+asr = ["artifice-transcribe[asr]", "artifice-model-harness>=0.2.0", "artifice-shared-ui>=0.2.0"]
+asr-cuda = [
+    "artifice-transcribe[asr-cuda]",
+    "artifice-model-harness>=0.2.0",
+    "artifice-shared-ui>=0.2.0",
+]
+asr-parakeet = [
+    "artifice-transcribe[asr-parakeet]",
+    "artifice-model-harness>=0.2.0",
+    "artifice-shared-ui>=0.2.0",
+]
+all = ["artifice-transcribe", "artifice-model-harness>=0.2.0", "artifice-shared-ui>=0.2.0"]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+# This root package ships no code of its own — it only exists so the workspace
+# and its extras have somewhere to be declared.
+py-modules = []
+
+# Workspace-only packages, not published anywhere. `[tool.uv.sources]` below
+# maps each name to its local sibling directory so uv resolves and installs
+# them (editable) in one step:
+#   uv sync --extra transcribe   # app + web UI, no ASR backend
+#   uv sync --extra asr          # + WhisperX/PyAnnote, CPU
+[tool.uv.workspace]
+members = [
+    "apps/artifice-transcribe",
+    "packages/model-harness",
+    "packages/output-layout",
+    "packages/secure-io",
+    "packages/shared-ui",
+]
+
+[tool.uv.sources]
+artifice-transcribe = { workspace = true }
+artifice-model-harness = { workspace = true }
+artifice-output-layout = { workspace = true }
+artifice-secure-io = { workspace = true }
+artifice-shared-ui = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "pytest-httpx>=0.36.2",
+    "httpx>=0.27.0",
+    "lxml>=5.0",
+    "pillow>=10.0",
+    "ruff>=0.5.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
