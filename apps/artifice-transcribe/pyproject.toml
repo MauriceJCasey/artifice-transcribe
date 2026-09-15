@@ -192,3 +192,14 @@ torchcodec = [
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+# Cost/ownership taxonomy (Test Bloat and God Script Refactor.md, Phase 1).
+# Registered ahead of the test-layer reorganisation in Phase 3 so tests can
+# start picking these up incrementally; nothing is tagged yet.
+markers = [
+    "unit: pure functions, no app/DB/threads/avoidable filesystem I/O",
+    "api: HTTP contract and validation tests against an isolated app",
+    "integration: database, filesystem, worker, or cross-layer flow tests",
+    "browser: real user-interface behaviour tests",
+    "live: tests requiring a live model or external application",
+]
+addopts = "--durations=20"
