@@ -2,195 +2,29 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-"""ASR model download service — consent, size disclosure, and progress.
-
-This module manages model-weight downloads from Hugging Face with explicit
-user consent, real byte-level progress reporting, and accurate transitive-size
-disclosure.  It does NOT import ``torch`` at module scope — the lightweight
-install (no ``--extra asr``) must be able to serve the model-list and consent
-endpoints, and this module is the surface that tells a bare install *what* is
-available before it downloads anything.
-"""
+"""DownloadManager — orchestrates in-flight ASR model downloads with progress."""
 
 from __future__ import annotations
 
 import contextlib
-import json
-import logging
-import os
 import threading
-from dataclasses import dataclass, field
-from enum import Enum
-from pathlib import Path
 from queue import Full, Queue
 from typing import Any
 
-from model_harness.registry import ASR_MODELS, AsrModelInfo
+from model_harness.registry import AsrModelInfo
 
-from .token_redaction import redact_token
+# The worker helpers that are monkeypatched by name in tests
+# (`patch.object(dlmod, "_download_with_progress", ...)` and
+# `dlmod._CancelledError()`), where ``dlmod`` is ``artifice_transcribe.services.download``.
+# They are referenced as *module attributes* of this package (a dynamic lookup at
+# call time) rather than bound at import time, so a patch on the package reaches
+# the manager's call sites. This mirrors the ``pdf_export`` facade in the OCR app.
+import artifice_transcribe.services.download as _dl
 
-logger = logging.getLogger(__name__)
-
-
-# ── Cache directory (matches huggingface_hub's default) ──────────────────────
-
-
-def hf_cache_dir() -> Path:
-    """Return the Hugging Face cache directory (platform-aware)."""
-    import platformdirs
-
-    default = Path(platformdirs.user_cache_dir("huggingface", "huggingface")) / "hub"
-    env = os.environ.get("HF_HUB_CACHE", "")
-    return Path(env) if env else default
-
-
-# ── Transitive dependency resolution ─────────────────────────────────────────
-
-
-def resolve_transitive(key: str) -> list[AsrModelInfo]:
-    """Return the full ordered set of models needed for *key*.
-
-    The first entry is always the requested model itself; any dependencies
-    follow in the order they are discovered.  Raises ``KeyError`` if *key*
-    is not in :data:`~model_harness.registry.ASR_MODELS`.
-    """
-    info = ASR_MODELS[key]
-    seen: set[str] = {key}
-    result: list[AsrModelInfo] = [info]
-
-    # Breadth-first so a direct dependency always appears before its own deps.
-    queue: list[str] = list(info.depends_on)
-    while queue:
-        dep_key = queue.pop(0)
-        if dep_key in seen:
-            continue
-        seen.add(dep_key)
-        dep_info = ASR_MODELS[dep_key]
-        result.append(dep_info)
-        queue.extend(d for d in dep_info.depends_on if d not in seen)
-
-    return result
-
-
-def total_transitive_size(key: str) -> int:
-    """Sum of all model weights for *key* and its dependencies."""
-    return sum(info.size_bytes for info in resolve_transitive(key))
-
-
-def requires_token(key: str) -> bool:
-    """``True`` if any model in the transitive set needs an HF token."""
-    return any(info.requires_hf_token for info in resolve_transitive(key))
-
-
-# ── Consent persistence ──────────────────────────────────────────────────────
-
-
-def _consent_path() -> Path:
-    """Return the per-user consent file path (``platformdirs``, not CWD)."""
-    import platformdirs
-
-    data_dir = Path(platformdirs.user_data_dir("artifice-transcribe", "ArtificeSuite"))
-    data_dir.mkdir(parents=True, exist_ok=True)
-    return data_dir / "model_consent.json"
-
-
-def _load_consents() -> dict[str, bool]:
-    """Return ``{model_key: True}`` for every consented model."""
-    path = _consent_path()
-    if not path.exists():
-        return {}
-    try:
-        from secure_io import ensure_restricted
-
-        ensure_restricted(path)
-        return json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        logger.warning("Could not read consent file at %s — treating as empty", path)
-        return {}
-
-
-def _save_consents(data: dict[str, bool]) -> None:
-    """Persist consent decisions with OS-appropriate access controls."""
-    from secure_io import write_private_json
-
-    write_private_json(_consent_path(), data)
-
-
-def is_consented(key: str) -> bool:
-    """Return ``True`` if the user has recorded consent for *key*."""
-    return bool(_load_consents().get(key, False))
-
-
-def record_consent(key: str, consented: bool = True) -> None:
-    """Set consent for *key* to *consented* and persist."""
-    data = _load_consents()
-    if consented:
-        data[key] = True
-    else:
-        data.pop(key, None)
-    _save_consents(data)
-
-
-def revoke_consent(key: str) -> None:
-    """Remove consent for *key*."""
-    record_consent(key, consented=False)
-
-
-# ── Download state machine ───────────────────────────────────────────────────
-
-
-class DownloadState(Enum):
-    """States for an in-flight model download."""
-
-    IDLE = "idle"
-    """Not started."""
-    DOWNLOADING = "downloading"
-    """Actively transferring bytes."""
-    VERIFYING = "verifying"
-    """Download complete, checksum verification in progress."""
-    DONE = "done"
-    """Successfully downloaded and verified."""
-    ERROR = "error"
-    """Download failed — see ``error_message``."""
-    CANCELLED = "cancelled"
-    """User cancelled before completion."""
-
-
-@dataclass
-class DownloadStatus:
-    """Snapshot of a single model's download progress."""
-
-    key: str
-    """Registry key of the model being downloaded."""
-    state: DownloadState = DownloadState.IDLE
-    """Current state of this download."""
-    hf_repo: str = ""
-    """Hugging Face repository being downloaded."""
-    total_bytes: int = 0
-    """Expected total bytes for this model."""
-    downloaded_bytes: int = 0
-    """Bytes transferred so far."""
-    error_message: str = ""
-    """Human-readable error if state is ``ERROR``."""
-    cache_path: str = ""
-    """Resolved cache directory where files land."""
-
-
-@dataclass
-class DownloadSet:
-    """Overall status for a model-and-dependencies download job."""
-
-    request_key: str
-    """The original model key the user requested."""
-    models: list[DownloadStatus] = field(default_factory=list)
-    """One status entry per model in the transitive set (self first, then deps)."""
-    started: bool = False
-    """``True`` once the first byte transfer begins."""
-    finished: bool = False
-    """``True`` when every model has reached a terminal state."""
-    error_message: str = ""
-    """Overall error if the download set failed."""
-
+from ..token_redaction import redact_token
+from . import is_consented
+from .models import DownloadSet, DownloadState, DownloadStatus
+from .registry import find_registry_key, hf_cache_dir, human_size, resolve_transitive
 
 # ── Download manager ─────────────────────────────────────────────────────────
 
@@ -436,7 +270,7 @@ class DownloadManager:
             )
 
             try:
-                downloaded_path, inner_thread = _download_with_progress(
+                downloaded_path, inner_thread = _dl._download_with_progress(
                     repo_id=info.hf_repo,
                     model_key=ms.key,
                     total_bytes=ms.total_bytes,
@@ -494,7 +328,7 @@ class DownloadManager:
                 )
                 success_count += 1
 
-            except _CancelledError as exc:
+            except _dl._CancelledError as exc:
                 # Register the inner thread so start_download's is_alive()
                 # check can prevent a second writer into the same cache dir.
                 if exc.inner_thread is not None:
@@ -543,161 +377,6 @@ class DownloadManager:
                     "success_count": success_count,
                 },
             )
-
-
-# ── Internal helpers ─────────────────────────────────────────────────────────
-
-
-class _CancelledError(Exception):
-    """Raised when the user cancels the download.
-
-    Carries *inner_thread* — the daemon thread running ``snapshot_download`` —
-    so the caller can register it for ``is_alive()`` checks even on the cancel
-    path, where ``_download_with_progress`` raises before returning the
-    thread normally.
-    """
-
-    def __init__(self, inner_thread: threading.Thread | None = None) -> None:
-        self.inner_thread = inner_thread
-        super().__init__("Download cancelled")
-
-
-def find_registry_key(info: AsrModelInfo) -> str:
-    """Reverse-lookup the registry key for an :class:`AsrModelInfo` instance."""
-    for k, v in ASR_MODELS.items():
-        if v is info:
-            return k
-    return info.hf_repo
-
-
-def human_size(num_bytes: int) -> str:
-    """Return a human-readable size string (MB or GB)."""
-    if num_bytes >= 1_000_000_000:
-        return f"{num_bytes / 1_000_000_000:.2f} GB"
-    return f"{num_bytes / 1_000_000:.1f} MB"
-
-
-def _download_with_progress(
-    repo_id: str,
-    model_key: str,
-    total_bytes: int,
-    token: str | None,
-    cache_dir: Path,
-    cancel: threading.Event,
-    progress_callback,
-) -> tuple[Path, threading.Thread]:
-    """Download model files from *repo_id* with progress monitoring.
-
-    Uses ``huggingface_hub.snapshot_download`` for the actual download (it
-    handles auth, caching, and resumption).  Progress is monitored by polling
-    the ``.incomplete`` download files in the cache — ``snapshot_download``
-    streams to temp files, and polling their sizes gives real byte progress
-    rather than a 0→100 jump on completion.
-
-    Returns ``(snapshot_path, inner_thread)`` on success.  The inner thread
-    is the daemon thread that runs ``snapshot_download`` — it may outlive
-    the polling loop after a cancel, and the caller stores it so
-    ``start_download`` can check :meth:`~threading.Thread.is_alive` before
-    starting a new download into the same cache directory.
-
-    Raises ``_CancelledError`` when the ``cancel`` event is set.
-    Raises ``RuntimeError`` with a redacted message on failure.
-    """
-    from huggingface_hub import snapshot_download
-    from huggingface_hub.constants import REPO_ID_SEPARATOR
-
-    cache_dir.mkdir(parents=True, exist_ok=True)
-
-    repo_folder = repo_id.replace("/", REPO_ID_SEPARATOR)
-
-    started = threading.Event()
-
-    # Launch the download in a sub-thread so we can monitor progress from here.
-    download_result: list[Exception | Path] = []
-    download_done = threading.Event()
-
-    def _download() -> None:
-        started.set()
-        try:
-            result = snapshot_download(
-                repo_id=repo_id,
-                cache_dir=str(cache_dir),
-                token=token,
-                resume_download=True,
-            )
-            download_result.append(Path(result))
-        except Exception as exc:
-            download_result.append(exc)
-        finally:
-            download_done.set()
-
-    dl_thread = threading.Thread(target=_download, daemon=True)
-    dl_thread.start()
-
-    if not started.wait(timeout=10):
-        logger.warning(
-            "Download thread for %s did not start within 10 s — may be stuck",
-            repo_id,
-        )
-
-    # Poll the snapshot directory for file sizes.
-    last_reported = 0
-    while not download_done.is_set():
-        if cancel.is_set():
-            # The inner snapshot_download has no cancel hook and will keep
-            # running, but we stop polling and raise so the worker cleans up.
-            raise _CancelledError(dl_thread)
-
-        # Count bytes in the snapshot directory and blobs.
-        current = _count_cache_bytes(cache_dir, repo_folder)
-        if current > last_reported:
-            last_reported = current
-            progress_callback(
-                min(current / max(total_bytes, 1), 1.0),
-                min(current, total_bytes),
-            )
-
-        download_done.wait(timeout=0.5)
-
-    # Final check — capture the result.
-    dl_thread.join(timeout=5)
-
-    if download_result:
-        result = download_result[0]
-        if isinstance(result, Exception):
-            msg = redact_token(str(result))
-            # Do *not* chain the raw exception as __cause__ — it may carry an
-            # unredacted token in its message or args.
-            raise RuntimeError(f"Download failed for {repo_id}: {msg}")
-        return result, dl_thread
-
-    # If we got here, something unexpected happened.
-    raise RuntimeError(f"Download for {repo_id} did not complete")
-
-
-def _count_cache_bytes(cache_dir: Path, repo_folder: str) -> int:
-    """Count bytes currently on disk for a model in the HF cache.
-
-    Walks the ``models--{repo_folder}`` tree and sums file sizes,
-    deduplicating by inode so hardlinks (snapshots → blobs) are not
-    double-counted.
-    """
-    total = 0
-    base = cache_dir / f"models--{repo_folder}"
-    if not base.exists():
-        return 0
-    seen_inodes: set[tuple[int, int]] = set()
-    for p in base.rglob("*"):
-        if p.is_file():
-            try:
-                st = p.stat()
-                ino = (st.st_dev, st.st_ino)
-                if ino not in seen_inodes:
-                    seen_inodes.add(ino)
-                    total += st.st_size
-            except OSError:
-                pass
-    return total
 
 
 # ── Module-level singleton ───────────────────────────────────────────────────
