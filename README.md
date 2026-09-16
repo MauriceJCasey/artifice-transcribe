@@ -1,5 +1,8 @@
 # Artifice Transcribe
 
+[![safety-tests](https://github.com/MauriceJCasey/artifice-transcribe/actions/workflows/safety-tests.yml/badge.svg)](https://github.com/MauriceJCasey/artifice-transcribe/actions/workflows/safety-tests.yml)
+[![REUSE status](https://api.reuse.software/badge/github.com/MauriceJCasey/artifice-transcribe)](https://api.reuse.software/info/github.com/MauriceJCasey/artifice-transcribe)
+
 A local-first, bring-your-own-model (BYOM) speech-to-text and speaker-diarization tool for oral
 history and interview transcription, built on WhisperX and pyannote.audio. Runs entirely on your
 own machine — no audio ever leaves it.
