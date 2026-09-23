@@ -6,19 +6,16 @@ from __future__ import annotations
 
 import asyncio
 import importlib
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import httpx
 import pytest
+from artifice_transcribe.db.models import JobStatus, SpeakerMapping, TranscriptionJob
 from httpx import ASGITransport, AsyncClient
 from pytest_httpx import HTTPXMock
 
-from artifice_transcribe.db.models import JobStatus, SpeakerMapping, TranscriptionJob
-
 pytestmark = pytest.mark.asyncio
-
-_ASR_AVAILABLE = importlib.util.find_spec("torch") is not None
 
 
 async def _make_job(
@@ -31,7 +28,7 @@ async def _make_job(
                 filename=filename,
                 status=status,
                 progress_percentage=100.0 if status == JobStatus.completed else 0.0,
-                created_at=created_at or datetime.now(timezone.utc),
+                created_at=created_at or datetime.now(UTC),
             )
         )
         await db.commit()
@@ -47,7 +44,7 @@ async def test_list_jobs_empty(api):
 
 
 async def test_list_jobs_newest_first(api):
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     await _make_job(api, "job-older", "older.wav", created_at=now - timedelta(minutes=5))
     await _make_job(api, "job-newer", "newer.wav", created_at=now)
 
@@ -176,21 +173,17 @@ async def test_transcribe_traversal_sanitisation(
         ("", "", 422, "both fields empty -> rejected"),
     ],
 )
-@pytest.mark.skipif(
-    not _ASR_AVAILABLE, reason="ASR stack not installed (pyannote.audio unavailable)"
-)
 async def test_enroll_traversal_sanitisation(api, name, fname, expected_status, description):
-    # Prevent the diarization model download (needs HF token) from
-    # interfering with the sanitisation test.
+    # Stub the engine boundary so the security assertions run without
+    # importing or downloading ASR dependencies such as pyannote.audio.
     from unittest.mock import MagicMock, patch
 
-    fake_embedding = MagicMock()
-    fake_inference_cls = MagicMock(return_value=MagicMock(return_value=fake_embedding))
+    import numpy as np
+
     fake_engine = MagicMock()
-    fake_engine._diarize_model.model._embedding = MagicMock()
+    fake_engine.extract_speaker_embedding.return_value = np.zeros(256, dtype=np.float32)
 
     with (
-        patch("pyannote.audio.Inference", fake_inference_cls),
         patch(
             "artifice_transcribe.api.v1.routes._get_engine",
             return_value=fake_engine,

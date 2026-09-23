@@ -218,6 +218,7 @@ _TRANSCRIBE_NAV_ITEMS = [
 
 _MASTHEAD_CTX = {
     "app_slug": "transcribe",
+    "shell_variant": "research",
     "brand_accent": "Transcribe",
     "page_title": "Oral history workspace",
     "document_context": "Local recordings",

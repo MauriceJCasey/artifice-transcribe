@@ -311,7 +311,7 @@
         btnStart.disabled = false;
         btnClear.disabled = false;
       } else {
-        dropzoneText.textContent = 'Drop an audio file here, or click to browse';
+        dropzoneText.textContent = 'Drop an audio or video file here, or choose a file to browse.';
         btnStart.disabled = true;
         btnClear.disabled = true;
       }
@@ -356,7 +356,7 @@
         } catch (_) { /* skip failed */ }
       }
       btn.disabled = false;
-      btn.textContent = 'Batch Upload';
+      btn.textContent = 'Add multiple recordings';
       window.ArtificeToast.success(`Queued ${queued} file(s)`, {duration: 3600});
       e.target.value = '';
     });
@@ -393,7 +393,7 @@
       trackActiveJob(created.job_id, selectedFile.name);
       $('file-input').value = '';
       selectedFile = null;
-      $('dropzone-text').textContent = 'Drop an audio file here, or click to browse';
+      $('dropzone-text').textContent = 'Drop an audio or video file here, or choose a file to browse.';
       $('btn-clear-file').disabled = true;
     } catch (err) {
       window.ArtificeToast.error(err.message);
@@ -449,7 +449,7 @@
     $('active-count').textContent = `${running.length} running`;
 
     if (jobs.length === 0) {
-      body.innerHTML = '<tr><td colspan="5" class="table-empty-cell"><span class="panel-empty-title">No active jobs yet.</span><span class="panel-empty-desc">Upload an audio file above to begin.</span></td></tr>';
+      body.innerHTML = '<tr><td colspan="5" class="table-empty-cell"><span class="panel-empty-title">No active recordings yet.</span><span class="panel-empty-desc">Add a recording above to begin.</span></td></tr>';
       return;
     }
 

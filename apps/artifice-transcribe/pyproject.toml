@@ -200,6 +200,7 @@ markers = [
     "api: HTTP contract and validation tests against an isolated app",
     "integration: database, filesystem, worker, or cross-layer flow tests",
     "browser: real user-interface behaviour tests",
+    "transcribe_ui: deterministic Transcribe browser journeys without live models",
     "live: tests requiring a live model or external application",
 ]
-addopts = "--durations=20"
+addopts = "--durations=20 -m 'not transcribe_ui'"

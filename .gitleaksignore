@@ -14,3 +14,7 @@
 #   sk-proj-abcdefghijklmnopqrstuvwxyz123456
 
 apps/artifice-transcribe/tests/test_download.py:generic-api-key:442
+
+# Browser UI model-consent fixture uses a model identifier that resembles an
+# API key; it is a public registry name, not a credential.
+apps/artifice-transcribe/tests/browser/test_transcribe_ui.py:generic-api-key:244

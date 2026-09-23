@@ -22,7 +22,7 @@
 
       <div class="card" style="margin-bottom:1rem;">
         <div class="card-head">
-          <h2>New Transcription</h2>
+          <h2>New transcription</h2>
         </div>
 
         <div class="asr-unavailable hidden" id="asr-notice-transcribe">
@@ -37,7 +37,7 @@
         </div>
 
         <div class="dropzone" id="dropzone" aria-describedby="asr-notice-transcribe-reason">
-          <span id="dropzone-text">Drop an audio file here, or click to browse</span>
+          <span id="dropzone-text">Drop an audio or video file here, or choose a file to browse.</span>
         </div>
         <input type="file" id="file-input" accept="audio/*,video/*" style="display:none;">
 
@@ -78,11 +78,11 @@
   <p class="dim" style="margin:0.5rem 0 0 0;">Starting a transcription downloads the selected Whisper, diarization and alignment models from Hugging Face on first use &mdash; roughly 140&nbsp;MB&ndash;3&nbsp;GB depending on model size. Later runs reuse the cached copy.</p>
 
         <div class="toolbar">
-          <button class="btn accent" id="btn-start" disabled aria-describedby="asr-notice-transcribe-reason">&#9654; Start Transcription</button>
+          <button class="btn accent" id="btn-start" disabled aria-describedby="asr-notice-transcribe-reason">&#9654; Start transcription</button>
           <button class="btn" id="btn-clear-file" disabled aria-describedby="asr-notice-transcribe-reason">Clear</button>
           <div class="spacer"></div>
           <span class="dim" id="upload-status"></span>
-          <button class="btn" id="btn-batch-upload" aria-describedby="asr-notice-transcribe-reason">Batch Upload</button>
+          <button class="btn" id="btn-batch-upload" aria-describedby="asr-notice-transcribe-reason">Add multiple recordings</button>
           <input type="file" id="batch-file-input" accept="audio/*,video/*" multiple style="display:none;">
         </div>
       </div>
@@ -97,7 +97,7 @@
             <thead>
               <tr><th>File</th><th class="c">Status</th><th class="c">Progress</th><th>Started</th><th class="c" style="width:6rem;"></th></tr>
             </thead>
-            <tbody id="active-body"><tr><td colspan="5" class="dim" style="text-align:center;">No active jobs yet.</td></tr></tbody>
+            <tbody id="active-body"><tr><td colspan="5" class="dim" style="text-align:center;">No active recordings yet.</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -126,8 +126,8 @@
       </div>
 
       <div class="panel-empty" id="transcript-empty">
-        <p class="panel-empty-title">No transcript selected.</p>
-        <p class="panel-empty-desc">Choose a completed job from the table above.</p>
+        <p class="panel-empty-title">No transcripts yet.</p>
+        <p class="panel-empty-desc">Choose a completed recording to review its transcript.</p>
       </div>
 
       <div class="card transcript-card hidden" id="transcript-card">
@@ -135,7 +135,7 @@
           <audio controls id="audio-player"></audio>
           <canvas id="waveform-canvas" height="80" style="width:100%;cursor:pointer;"></canvas>
           <details class="metadata-form" id="metadata-form" open>
-            <summary>Interview Metadata</summary>
+            <summary>Interview metadata</summary>
             <div class="metadata-grid">
               <label>Interviewee <input type="text" id="meta-interviewee" placeholder="Full name"></label>
               <label>Interviewer <input type="text" id="meta-interviewer" placeholder="Full name"></label>
@@ -155,7 +155,7 @@
             </div>
             <div id="speaker-rows"></div>
             <div class="toolbar" style="padding:0.5rem 0 0;">
-              <button class="btn" id="btn-save-speakers">Save Names</button>
+              <button class="btn" id="btn-save-speakers">Save speaker names</button>
               <button class="btn" id="btn-enroll-from-job" aria-describedby="asr-notice-speakers-reason">Enroll Selected as Known Speaker</button>
             </div>
             <div class="toolbar" style="padding:0.25rem 0 0;">
@@ -186,6 +186,12 @@
           <span class="meta-badge" id="meta-badge"></span>
           <span class="dim" id="search-hit-info"></span>
           <div class="edit-toolbar" id="edit-toolbar">
+            <label class="review-control" for="playback-speed">Speed
+              <select id="playback-speed" aria-label="Playback speed"><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>
+            </label>
+            <label class="review-control" for="transcribe-reading-size">Text
+              <select id="transcribe-reading-size" data-transcribe-reading-size aria-label="Transcript text size"><option value="16px">16</option><option value="18px" selected>18</option><option value="20px">20</option><option value="24px">24</option></select>
+            </label>
             <button class="btn" id="btn-diff-toggle" title="Toggle diff view">Diff</button>
             <button class="btn" id="btn-history-toggle" title="Show edit history">History</button>
             <button class="btn accent" id="btn-save-edits" disabled title="Save all edits (Ctrl+S / Ctrl+Enter)">Save</button>
