@@ -42,6 +42,7 @@ troubleshooting local models.
 <p align="center">
   <img src="docs/images/artifice-transcribe-workflow.gif" width="880" alt="Artifice Transcribe workflow: a finished interview with its waveform, the two speakers named, a misheard word corrected with a diff against the recognised text, the edit saved, then the export formats">
 </p>
+
 ## Getting started
 
 ```bash
