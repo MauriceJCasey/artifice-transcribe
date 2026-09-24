@@ -48,7 +48,10 @@ jobs:
           enable-cache: true
 
       - name: Install the app and PyInstaller
-        run: uv sync --extra transcribe
+        # transcribe-window adds pywebview, so the frozen app opens its own
+        # window (closing it quits) instead of leaving a browser tab and a
+        # process that can only be ended from Task Manager.
+        run: uv sync --extra transcribe-window
 
       - name: Gate on the core API/e2e workflow
         # A failing core workflow must produce no distributable bundle.
@@ -68,6 +71,11 @@ jobs:
         # no ASR stack installed — exactly what this core-only bundle carries.
         run: |
           BINARY="./dist/artifice-transcribe/artifice-transcribe"
+          # CI is headless, so the window cannot be opened here; check that
+          # pywebview shipped, since without it the app has no window to close.
+          test -d ./dist/artifice-transcribe/_internal/webview \
+            && echo "  pywebview bundled: yes" \
+            || { echo "  pywebview bundled: NO"; exit 1; }
           setsid nohup "$BINARY" --port 18999 --no-window > /tmp/exe.log 2>&1 < /dev/null &
           sleep 12
           fail=0
@@ -92,6 +100,12 @@ jobs:
         run: |
           $exe = ".\dist\artifice-transcribe\artifice-transcribe.exe"
           if (-not (Test-Path $exe)) { Write-Error "no binary at $exe"; exit 1 }
+          # CI is headless, so the window cannot be opened here; check that
+          # pywebview shipped, since without it the app has no window to close.
+          if (-not (Test-Path ".\dist\artifice-transcribe\_internal\webview")) {
+            Write-Host "  pywebview bundled: NO"; exit 1
+          }
+          Write-Host "  pywebview bundled: yes"
           Write-Host "binary size: $((Get-Item $exe).Length) bytes"
           $stdoutLog = "artifice-transcribe-stdout.log"
           $stderrLog = "artifice-transcribe-stderr.log"

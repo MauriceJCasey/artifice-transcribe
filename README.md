@@ -43,7 +43,40 @@ troubleshooting local models.
   <img src="docs/images/artifice-transcribe-workflow.gif" width="880" alt="Artifice Transcribe workflow: a finished interview with its waveform, the two speakers named, a misheard word corrected with a diff against the recognised text, the edit saved, then the export formats">
 </p>
 
-## Getting started
+## Download
+
+Windows and Linux builds are attached to each
+[release](https://github.com/MauriceJCasey/artifice-transcribe/releases/latest). They are not
+code-signed yet.
+
+**The download does not include the speech-recognition stack.** WhisperX and PyTorch are several
+gigabytes and cannot be added to a portable build, so the download cannot transcribe new
+recordings by itself. It runs the whole interface: the library, review against audio, speaker
+naming, editing, the dictionary and every export. To transcribe, use the source install below.
+
+**Windows 10 or 11**
+
+1. Download `artifice-transcribe-Windows-*.zip`, right-click it and choose **Extract All**. Keep
+   the extracted folder together: the app needs the files beside it.
+2. Open `artifice-transcribe.exe`. Windows SmartScreen will say it "protected your PC" because the
+   build is unsigned: choose **More info**, then **Run anyway**.
+3. The app opens in its own window, and closing the window quits it.
+
+**Linux (x86-64)**
+
+```bash
+mkdir artifice-transcribe && tar -xzf artifice-transcribe-Linux-*.tar.gz -C artifice-transcribe
+cd artifice-transcribe && ./artifice-transcribe
+```
+
+This opens `http://localhost:8000` in your browser; press Ctrl+C in the terminal to stop it. A
+portable Linux build cannot bundle the system GTK libraries a native window uses, so it runs in
+the browser.
+
+**macOS** has no download yet: macOS will not open an unsigned app without extra steps, so use the
+source install below.
+
+## Run from source
 
 ```bash
 uv sync --extra transcribe --extra asr   # use --extra asr-cuda for an NVIDIA GPU

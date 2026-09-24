@@ -467,6 +467,11 @@ transcribe = [
     { name = "artifice-shared-ui" },
     { name = "artifice-transcribe" },
 ]
+transcribe-window = [
+    { name = "artifice-model-harness" },
+    { name = "artifice-shared-ui" },
+    { name = "artifice-transcribe", extra = ["window"] },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -489,18 +494,21 @@ requires-dist = [
     { name = "artifice-model-harness", marker = "extra == 'asr-cuda'", editable = "packages/model-harness" },
     { name = "artifice-model-harness", marker = "extra == 'asr-parakeet'", editable = "packages/model-harness" },
     { name = "artifice-model-harness", marker = "extra == 'transcribe'", editable = "packages/model-harness" },
+    { name = "artifice-model-harness", marker = "extra == 'transcribe-window'", editable = "packages/model-harness" },
     { name = "artifice-shared-ui", marker = "extra == 'all'", editable = "packages/shared-ui" },
     { name = "artifice-shared-ui", marker = "extra == 'asr'", editable = "packages/shared-ui" },
     { name = "artifice-shared-ui", marker = "extra == 'asr-cuda'", editable = "packages/shared-ui" },
     { name = "artifice-shared-ui", marker = "extra == 'asr-parakeet'", editable = "packages/shared-ui" },
     { name = "artifice-shared-ui", marker = "extra == 'transcribe'", editable = "packages/shared-ui" },
+    { name = "artifice-shared-ui", marker = "extra == 'transcribe-window'", editable = "packages/shared-ui" },
     { name = "artifice-transcribe", marker = "extra == 'all'", editable = "apps/artifice-transcribe" },
     { name = "artifice-transcribe", marker = "extra == 'transcribe'", editable = "apps/artifice-transcribe" },
     { name = "artifice-transcribe", extras = ["asr"], marker = "extra == 'asr'", editable = "apps/artifice-transcribe" },
     { name = "artifice-transcribe", extras = ["asr-cuda"], marker = "extra == 'asr-cuda'", editable = "apps/artifice-transcribe" },
     { name = "artifice-transcribe", extras = ["asr-parakeet"], marker = "extra == 'asr-parakeet'", editable = "apps/artifice-transcribe" },
+    { name = "artifice-transcribe", extras = ["window"], marker = "extra == 'transcribe-window'", editable = "apps/artifice-transcribe" },
 ]
-provides-extras = ["transcribe", "asr", "asr-cuda", "asr-parakeet", "all"]
+provides-extras = ["transcribe", "transcribe-window", "asr", "asr-cuda", "asr-parakeet", "all"]
 
 [package.metadata.requires-dev]
 dev = [
