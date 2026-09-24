@@ -471,7 +471,7 @@ class TestByomContractAndSsrf:
     def test_about_page_serves(self, client):
         r = client.get("/about")
         assert r.status_code == 200
-        assert "About ArtificeTranscribe" in r.text
+        assert "About Artifice Transcribe" in r.text
         assert "app-shell" in r.text
 
     def test_about_page_skips_workspace_scripts(self, client):

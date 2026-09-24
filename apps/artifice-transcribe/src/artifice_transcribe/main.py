@@ -113,7 +113,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="ArtificeTranscribe",
+    title="Artifice Transcribe",
     version="0.1.0",
     description="Speech-to-Text & Diarization API",
     lifespan=lifespan,
@@ -263,7 +263,7 @@ async def about() -> HTMLResponse:
         _render(
             "about.html",
             active_tab="settings",
-            page_title="About ArtificeTranscribe",
+            page_title="About Artifice Transcribe",
             document_context=None,
             show_activity=False,
         )
@@ -401,7 +401,7 @@ def cli():
 
     # ── Server-only mode (--no-window) ──────────────────────────────────
     if args.no_window:
-        print(f"ArtificeTranscribe running at {url}  (Ctrl+C to stop)", flush=True)
+        print(f"Artifice Transcribe running at {url}  (Ctrl+C to stop)", flush=True)
         with contextlib.suppress(KeyboardInterrupt):
             server_thread.join()
         return
@@ -410,7 +410,7 @@ def cli():
     try:
         from .web.window import open_native_window  # noqa: PLC0415
 
-        result = open_native_window(url, title="ArtificeTranscribe")
+        result = open_native_window(url, title="Artifice Transcribe")
         if result.opened:
             # Window closed by user — daemon thread dies with the process.
             return
@@ -420,7 +420,7 @@ def cli():
         pass
 
     # ── Fall back to browser ────────────────────────────────────────────
-    print(f"ArtificeTranscribe running at {url}  (Ctrl+C to stop)", flush=True)
+    print(f"Artifice Transcribe running at {url}  (Ctrl+C to stop)", flush=True)
     webbrowser.open(url)
     with contextlib.suppress(KeyboardInterrupt):
         server_thread.join()

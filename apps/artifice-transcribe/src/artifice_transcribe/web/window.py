@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-"""Native window re-exports from shared-ui for ArtificeTranscribe."""
+"""Native window re-exports from shared-ui for Artifice Transcribe."""
 
 from __future__ import annotations
 

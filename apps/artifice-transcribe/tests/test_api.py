@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-"""End-to-end verification script for the ArtificeTranscribe API.
+"""End-to-end verification script for the Artifice Transcribe API.
 
 This file is deliberately excluded from pytest collection (see
 ``collect_ignore`` in ``conftest.py``): it needs a live server, and the

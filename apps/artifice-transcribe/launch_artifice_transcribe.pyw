@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-"""Windowed launcher for ArtificeTranscribe on Windows.
+"""Windowed launcher for Artifice Transcribe on Windows.
 
 Mirrors `apps/artifice-ocr/launch_ocr_pipeline_web.pyw`: a `.pyw` has no
 console, so anything that goes wrong must be written to a log AND shown in a
@@ -112,8 +112,8 @@ def main() -> int:
     missing = _missing(REQUIRED)
     if missing:
         _show_error(
-            "ArtificeTranscribe - missing dependencies",
-            "This Python cannot run ArtificeTranscribe.\n\n"
+            "Artifice Transcribe - missing dependencies",
+            "This Python cannot run Artifice Transcribe.\n\n"
             f"Interpreter:\n{sys.executable}\n\n"
             f"Missing: {', '.join(missing)}\n\n"
             "Run the updater to install them:\n"
@@ -124,7 +124,7 @@ def main() -> int:
 
     if _missing(("artifice_transcribe",)):
         _show_error(
-            "ArtificeTranscribe - app not installed",
+            "Artifice Transcribe - app not installed",
             "The artifice_transcribe package is not importable from this "
             "interpreter.\n\n"
             f"Interpreter:\n{sys.executable}\n\n"
@@ -140,7 +140,7 @@ def main() -> int:
     # deliberately do NOT pass --no-window: the native EdgeWebView2 window is
     # the entire reason for launching on Windows rather than through WSL.
     sys.argv = [str(Path(__file__)), *sys.argv[1:]]
-    _log(f"Starting ArtificeTranscribe with {sys.executable}")
+    _log(f"Starting Artifice Transcribe with {sys.executable}")
     cli()
     return 0
 
@@ -155,7 +155,7 @@ if __name__ == "__main__":
         _log(detail)
         last = detail.strip().splitlines()[-1] if detail.strip() else "unknown error"
         _show_error(
-            "ArtificeTranscribe failed to start",
+            "Artifice Transcribe failed to start",
             f"{last}\n\nFull details in:\n{LOG}",
         )
         sys.exit(1)

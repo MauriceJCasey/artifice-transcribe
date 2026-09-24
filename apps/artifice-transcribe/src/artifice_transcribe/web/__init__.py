@@ -2,4 +2,4 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-"""ArtificeTranscribe web package."""
+"""Artifice Transcribe web package."""

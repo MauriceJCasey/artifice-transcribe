@@ -109,6 +109,41 @@ def test_open_transcript_fits_its_card(ui, width):
     u.assert_clean()
 
 
+@pytest.mark.parametrize("width", [1024, 1200])
+def test_every_tab_is_visible(ui, width):
+    """The connection label collapses to its dot so all four tabs fit.
+
+    With the full label, "People & dictionary" and "Settings" sat under the
+    utility cluster at 1024px (and Settings was clipped at 1200px),
+    reachable only by scrolling the tab rail.
+    """
+    u = ui(byom_configured=False)
+    u.page.set_viewport_size({"width": width, "height": 800})
+    state = u.page.evaluate(
+        """() => {
+          const nav = document.querySelector('.shell-titlebar-nav');
+          const btn = document.querySelector('[data-shell-action="model"]');
+          const label = btn.querySelector('[data-model-label]');
+          return {
+            railScrolls: nav.scrollWidth > nav.clientWidth + 1,
+            labelShown: label.getBoundingClientRect().width > 2,
+            name: btn.getAttribute('aria-label'),
+            title: btn.getAttribute('title'),
+          };
+        }"""
+    )
+    assert state == {
+        "railScrolls": False,
+        "labelShown": False,
+        "name": "Set up connection",
+        "title": "Set up connection",
+    }
+    # Wide windows keep the full label.
+    u.page.set_viewport_size({"width": 1440, "height": 800})
+    assert u.page.locator("[data-model-label]").bounding_box()["width"] > 2
+    u.assert_clean()
+
+
 def test_research_navigation_preserves_deep_links_history_and_focus(ui):
     """Direct views and browser history remain authoritative after the rail move."""
     u = ui(populated=False, byom_configured=True)
