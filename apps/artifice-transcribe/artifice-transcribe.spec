@@ -46,9 +46,12 @@
 #   uv run --with pyinstaller pyinstaller --clean --noconfirm \
 #       apps/artifice-transcribe/artifice-transcribe.spec
 
+import sys
 from pathlib import Path
 
 from PyInstaller.utils.hooks import collect_data_files
+
+is_win = sys.platform == "win32"
 
 # ---------------------------------------------------------------------------
 # Configuration — paths relative to the repo root
@@ -105,7 +108,48 @@ HIDDEN_IMPORTS = [
     "model_harness.endpoint_policy",
     "model_harness.registry",
     "model_harness.resolution",
+    # pywebview — the native window. It loads its platform backend
+    # dynamically, which PyInstaller's static analysis cannot see. Same list
+    # as artifice-ocr.spec, so the two apps open and close the same way.
+    "webview",
+    "webview.dom",
+    "webview.dom.element",
+    "webview.dom.event",
+    "webview.dom.dom",
+    "webview.dom.propdict",
+    "webview.dom.classlist",
+    "webview.menu",
+    "webview.http",
+    "webview.event",
+    "webview.screen",
+    "webview.localization",
+    "webview.guilib",
+    "webview.util",
+    "webview.state",
+    "webview.models",
+    "webview.errors",
+    "webview._version",
 ]
+
+# Freeze only the pywebview backend for the target platform (see
+# artifice-ocr.spec for why not all of them).
+if sys.platform == "win32":
+    HIDDEN_IMPORTS.extend(
+        [
+            "webview.platforms.winforms",
+            "webview.platforms.win32",
+            "webview.platforms.edgechromium",
+            # winforms falls back to MSHTML when the WebView2 runtime is not
+            # available; selected dynamically, so it must be listed or
+            # pywebview fails outright and the app falls back to a browser.
+            "webview.platforms.mshtml",
+            "clr",
+        ]
+    )
+elif sys.platform == "darwin":
+    HIDDEN_IMPORTS.append("webview.platforms.cocoa")
+else:
+    HIDDEN_IMPORTS.append("webview.platforms.gtk")
 
 # ---------------------------------------------------------------------------
 # Exclusions — the ASR stack is deliberately NOT bundled (see header).  This
@@ -131,11 +175,6 @@ EXCLUDES = [
     "pyarrow",
     "scipy",
     "matplotlib",
-    # pywebview is deliberately NOT bundled either: main.py's cli() already
-    # falls back to opening a browser when the native window is unavailable,
-    # and the audit doc does not require a native window for Transcribe.  The
-    # browser fallback keeps the bundle smaller and free of a GUI toolkit.
-    "webview",
 ]
 
 # ---------------------------------------------------------------------------
@@ -146,6 +185,26 @@ EXCLUDES = [
 datas = []
 datas.extend(collect_data_files("artifice_transcribe"))
 datas.extend(collect_data_files("shared_ui"))
+
+# pywebview ships js/ and lib/ directories that its backends need at runtime.
+# On Windows we also need the WebView2 loader DLLs.
+datas.extend(collect_data_files("webview", subdir="js"))
+if is_win:
+    datas.extend(collect_data_files("webview", subdir="lib"))
+
+# pywebview's own PyInstaller hook, so those data files are collected on every
+# platform (as in artifice-ocr.spec).
+_WEBVIEW_HOOKSPATH = []
+try:
+    import os as _os
+
+    import webview as _wv
+
+    _hook_dir = _os.path.join(_os.path.dirname(_wv.__file__), "__pyinstaller")
+    if _os.path.isdir(_hook_dir):
+        _WEBVIEW_HOOKSPATH.append(_hook_dir)
+except Exception:
+    pass
 
 # ---------------------------------------------------------------------------
 # Analysis
@@ -180,7 +239,7 @@ a = Analysis(
     binaries=[],
     datas=datas,
     hiddenimports=HIDDEN_IMPORTS,
-    hookspath=[],
+    hookspath=_WEBVIEW_HOOKSPATH,
     hooksconfig={},
     runtime_hooks=[],
     excludes=EXCLUDES,
