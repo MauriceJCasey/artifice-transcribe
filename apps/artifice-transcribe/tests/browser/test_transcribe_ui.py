@@ -141,6 +141,40 @@ def test_buttons_match_ocr_flat_sentence_case_hairline(ui):
     u.assert_clean()
 
 
+def _open_first_transcript(u):
+    u.tab("library")
+    u.page.locator("#library-body [data-row-job]").first.click()
+    expect(u.page.locator("#transcript-card")).to_be_visible()
+
+
+def test_ai_buttons_need_a_connection_not_just_a_finished_transcript(ui):
+    """Summarise and Cleanup enabled for any completed job, so with no text
+    model connected they looked ready and only failed when clicked."""
+    u = ui(byom_configured=False)
+    _open_first_transcript(u)
+    for button in (u.page.locator("#btn-ai-summarize"), u.page.locator("#btn-ai-cleanup")):
+        expect(button).to_be_disabled()
+        expect(button).to_have_attribute("title", "Set up a connection (top right) to use this.")
+
+    # Setting up a connection enables them without a reload; the masthead
+    # control's data-state is what byom.js changes.
+    u.page.evaluate(
+        "document.querySelector('[data-shell-action=\"model\"]').dataset.state = 'configured'"
+    )
+    for button in (u.page.locator("#btn-ai-summarize"), u.page.locator("#btn-ai-cleanup")):
+        expect(button).to_be_enabled()
+        expect(button).not_to_have_attribute("title", re.compile(".+"))
+    u.assert_clean()
+
+
+def test_ai_buttons_are_ready_when_connected_and_transcript_is_complete(ui):
+    u = ui(byom_configured=True)
+    _open_first_transcript(u)
+    expect(u.page.locator("#btn-ai-summarize")).to_be_enabled()
+    expect(u.page.locator("#btn-ai-cleanup")).to_be_enabled()
+    u.assert_clean()
+
+
 def test_pane_before_a_transcript_is_open_does_not_deny_there_are_any(ui):
     """It said "No transcripts yet." directly beneath a library that listed one."""
     u = ui(byom_configured=True)

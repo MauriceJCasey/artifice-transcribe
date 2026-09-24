@@ -722,9 +722,8 @@
     $('btn-delete-job').onclick = () => deleteJob(job.id);
     $('btn-save-speakers').onclick = () => saveSpeakers(job.id);
     $('btn-save-metadata').onclick = () => saveMetadata(job.id);
-    const canAI = job.status === 'completed';
-    $('btn-ai-summarize').disabled = !canAI;
-    $('btn-ai-cleanup').disabled = !canAI;
+    aiJobCompleted = job.status === 'completed';
+    updateAIButtons();
     $('btn-ai-summarize').onclick = () => summarizeTranscript(job.id);
     $('btn-ai-cleanup').onclick = () => cleanupTranscript(job.id);
     initEditToolbar();
@@ -1842,6 +1841,44 @@ function closeAIModal() {
   $('ai-modal').classList.add('hidden');
 }
 
+// Summarise and Cleanup need two things: a finished transcript, and a text
+// model to send it to. They used to check only the first, so with no
+// connection they looked ready and failed when clicked.
+let aiJobCompleted = false;
+const AI_NEEDS_CONNECTION = 'Set up a connection (top right) to use this.';
+
+function connectionConfigured() {
+  const btn = document.querySelector('[data-shell-action="model"]');
+  return !!btn && btn.dataset.state === 'configured';
+}
+
+// Not while a job is streaming: those handlers hold the buttons disabled
+// themselves, and re-enable them through here when they finish.
+let aiBusy = false;
+
+function updateAIButtons() {
+  const configured = connectionConfigured();
+  const ready = aiJobCompleted && configured && !aiBusy;
+  ['btn-ai-summarize', 'btn-ai-cleanup'].forEach((id) => {
+    const btn = $(id);
+    btn.disabled = !ready;
+    // Explain a disabled button that a connection would enable.
+    if (aiJobCompleted && !configured) btn.title = AI_NEEDS_CONNECTION;
+    else btn.removeAttribute('title');
+  });
+}
+
+// The masthead control's data-state changes when a connection is set up, so
+// the buttons follow it without a reload.
+function initAIButtons() {
+  const control = document.querySelector('[data-shell-action="model"]');
+  if (!control) return;
+  new MutationObserver(updateAIButtons).observe(control, {
+    attributes: true,
+    attributeFilter: ['data-state'],
+  });
+}
+
 function setAIStatus(text, type) {
   const el = $('ai-status');
   if (el) el.textContent = text;
@@ -1887,16 +1924,16 @@ async function summarizeTranscript(jobId) {
   if (!jobId) return;
   openAIModal('Transcript Summary');
   setAIStatus('Generating summary...', '');
-  $('btn-ai-summarize').disabled = true;
-  $('btn-ai-cleanup').disabled = true;
+  aiBusy = true;
+  updateAIButtons();
   try {
     const result = await streamAIJob(jobId, 'summarize');
     setAIStatus(`Summary generated (${result.length} chars)`, 'ok');
   } catch (err) {
     setAIStatus(`Failed: ${err.message}`, 'error');
   } finally {
-    $('btn-ai-summarize').disabled = false;
-    $('btn-ai-cleanup').disabled = false;
+    aiBusy = false;
+    updateAIButtons();
   }
 }
 
@@ -1904,16 +1941,16 @@ async function cleanupTranscript(jobId) {
   if (!jobId) return;
   openAIModal('Transcript Cleanup');
   setAIStatus('Cleaning up transcript...', '');
-  $('btn-ai-summarize').disabled = true;
-  $('btn-ai-cleanup').disabled = true;
+  aiBusy = true;
+  updateAIButtons();
   try {
     const result = await streamAIJob(jobId, 'cleanup');
     setAIStatus(`Cleanup complete (${result.length} chars)`, 'ok');
   } catch (err) {
     setAIStatus(`Failed: ${err.message}`, 'error');
   } finally {
-    $('btn-ai-summarize').disabled = false;
-    $('btn-ai-cleanup').disabled = false;
+    aiBusy = false;
+    updateAIButtons();
   }
 }
 
@@ -2493,6 +2530,7 @@ function initDownloadDialog() {
     initAudioHighlight();
     initHealthPanel();
     initModelGuide();
+    initAIButtons();
     initGlobalSearch();
     initKeyboardShortcuts();
     initSettingsPanel();
