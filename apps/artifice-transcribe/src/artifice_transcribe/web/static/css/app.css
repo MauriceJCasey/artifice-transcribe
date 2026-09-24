@@ -391,73 +391,66 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
 
 .toolbar .spacer { flex: 1; }
 
-button.btn, .button-primary {
+/* Buttons match Artifice OCR's: flat, a hairline border, body type in
+   sentence case, an accent-wash hover. They used to carry hard offset
+   shadows (3px at rest, 4px on hover), a heavy ink border, and uppercase
+   tracked labels. */
+button.btn {
   appearance: none;
-  border: 1.5px solid var(--ink);
+  border: 1px solid var(--rule);
   background: var(--paper-raised);
   color: var(--ink);
   border-radius: var(--radius-md);
-  /* Design_Philosophy.md §8.1 button padding, applied literally rather
-     than the smaller ad hoc value this rule used to carry — see the
-     app.css header note on control-height parity. line-height is pinned
-     to 1 because some .btn labels mix Latin text with a Unicode dingbat
-     (e.g. "&#9654; Start Transcription"); with the default
-     `line-height: normal` the browser falls back to a different font for
-     the glyph and that font's own line metrics inflate the button's line
-     box a few px relative to a glyph-free sibling button. */
+  /* Design_Philosophy.md §8.1 button padding, applied literally. */
   padding: 0.8rem 1.4rem;
   /* §8.3 row-alignment: buttons that share a row with inputs/selects must
      resolve to --control-height. .btn.tiny is exempt — see below. */
   min-height: var(--control-height);
+  /* Pinned to 1 as a row-alignment precaution across every label. Icons are
+     inline SVG (see .icon-btn), not dingbat glyphs, whose fallback font used
+     to inflate the line box. Labels that wrap override it locally. */
   line-height: 1;
-  font-family: var(--font-label);
   font-weight: 600;
-  font-size: 0.8rem;
-  letter-spacing: var(--label-tracking);
-  text-transform: uppercase;
+  font-size: var(--text-sm);
   cursor: pointer;
-  box-shadow: 3px 3px 0 var(--paper-recessed);
-  transition: background-color var(--duration-normal) ease, color var(--duration-normal) ease,
-              box-shadow var(--duration-normal) ease, transform var(--duration-normal) ease;
+  transition: background 0.2s var(--ease-primary), border-color 0.2s var(--ease-primary),
+              color 0.2s var(--ease-primary);
 }
 
-button.btn:hover:not(:disabled), .button-primary:hover:not(:disabled) {
-  background-color: var(--ink);
-  color: var(--paper-raised);
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 var(--accent);
-  border-color: var(--ink);
+button.btn:hover:not(:disabled) {
+  background: var(--accent-wash);
+  border-color: var(--accent);
 }
+button.btn:active:not(:disabled) { transform: translateY(1px); }
 
-button.btn:active:not(:disabled), .button-primary:active:not(:disabled) {
-  transform: translate(0, 0);
-  box-shadow: 2px 2px 0 var(--accent);
-}
-
-button.btn:disabled, .button-primary:disabled {
+button.btn:disabled {
   color: var(--ink-faint);
-  background: var(--paper-recessed);
-  border-color: var(--rule);
   cursor: default;
   opacity: 0.55;
-  box-shadow: none;
-  transform: none;
 }
 
 button.btn.accent {
   background: var(--accent);
   border-color: var(--accent-deep);
   color: var(--paper);
-  box-shadow: 3px 3px 0 var(--paper-recessed);
 }
-button.btn.accent:hover:not(:disabled) {
-  background: var(--accent-deep);
+button.btn.accent:hover:not(:disabled) { background: var(--accent-deep); }
+
+button.btn.danger { color: var(--error); }
+button.btn.danger:hover:not(:disabled) {
+  background: var(--error);
   color: var(--paper);
-  box-shadow: 4px 4px 0 var(--ink);
+  border-color: var(--error);
 }
 
-button.btn.danger { color: var(--error); border-color: var(--error); }
-button.btn.danger:hover:not(:disabled) { background: var(--error); color: var(--paper); border-color: var(--error); box-shadow: 4px 4px 0 var(--ink); }
+/* A button pairing an inline SVG icon with a text label (Design_Philosophy.md
+   §8.8), as in OCR. Flex handles the icon/label alignment. */
+button.btn.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+button.btn.icon-btn svg { flex-shrink: 0; }
 
 /* --------------------------------------------------------------------- table */
 
@@ -837,22 +830,14 @@ table.queue tbody tr.selected { background: var(--accent-wash); }
 .health-dot.warn { background: #ffc107; }
 .health-dot.error { background: #dc3545; }
 
-.btn.tiny {
-  padding: 0.2rem 0.5rem;
-  font-size: 0.72rem;
-  border: 1px solid var(--rule);
-  background: var(--paper-raised);
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  box-shadow: 2px 2px 0 var(--paper-recessed);
-  text-transform: uppercase;
-  letter-spacing: var(--label-tracking);
-  font-weight: 600;
+/* The dense variant, like OCR's .btn-small: no shadow, no uppercase. */
+button.btn.tiny {
+  padding: 0.35rem 0.7rem;
+  font-size: var(--text-xs);
   /* Exempt from §8.3 row-alignment — dense secondary UI, reviewed and kept
      compact in an earlier pass. */
   min-height: unset;
 }
-.btn.tiny:hover { background: var(--accent-wash); border-color: var(--accent); color: var(--accent-deep); }
 
 /* ── health detail panel ───────────────────────────────────────── */
 

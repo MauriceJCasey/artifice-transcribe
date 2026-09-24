@@ -109,6 +109,38 @@ def test_open_transcript_fits_its_card(ui, width):
     u.assert_clean()
 
 
+_BUTTON_STYLE_JS = """() => [...document.querySelectorAll('button.btn')]
+  .filter((b) => b.getBoundingClientRect().width > 0)
+  .map((b) => {
+    const cs = getComputedStyle(b);
+    return {id: b.id || b.textContent.trim().slice(0, 24), shadow: cs.boxShadow,
+            transform: cs.textTransform, border: cs.borderTopWidth};
+  })
+  .filter((s) => s.shadow !== 'none' || s.transform !== 'none' || s.border !== '1px')"""
+
+
+def test_buttons_match_ocr_flat_sentence_case_hairline(ui):
+    """Buttons had hard offset shadows, uppercase tracked labels and a heavy
+    ink border; Artifice OCR's are flat, sentence case, with a hairline."""
+    u = ui(byom_configured=True)
+    assert u.page.evaluate(_BUTTON_STYLE_JS) == []
+
+    u.tab("library")
+    u.page.locator("#library-body [data-row-job]").first.click()
+    expect(u.page.locator("#transcript-card")).to_be_visible()
+    assert u.page.evaluate(_BUTTON_STYLE_JS) == []
+
+    # Hover and press must not bring a shadow back either.
+    save = u.page.locator("#btn-save-speakers")
+    save.hover()
+    u.page.wait_for_timeout(350)
+    assert save.evaluate("el => getComputedStyle(el).boxShadow") == "none"
+    u.page.mouse.down()
+    assert save.evaluate("el => getComputedStyle(el).boxShadow") == "none"
+    u.page.mouse.up()
+    u.assert_clean()
+
+
 def test_pane_before_a_transcript_is_open_does_not_deny_there_are_any(ui):
     """It said "No transcripts yet." directly beneath a library that listed one."""
     u = ui(byom_configured=True)
