@@ -122,6 +122,15 @@ EXCLUDES = [
     "transformers",
     "pyannote.audio",
     "triton",
+    # Dependencies of that stack (whisperx, pyannote, datasets) that the core
+    # app never imports. They only get bundled if they happen to be installed
+    # on the build machine: measured on a workspace venv with the extras
+    # installed, pyarrow alone was 149 MB of a 500 MB bundle. numpy stays
+    # (it is a core dependency).
+    "pandas",
+    "pyarrow",
+    "scipy",
+    "matplotlib",
     # pywebview is deliberately NOT bundled either: main.py's cli() already
     # falls back to opening a browser when the native window is unavailable,
     # and the audit doc does not require a native window for Transcribe.  The
