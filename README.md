@@ -43,6 +43,11 @@ troubleshooting local models.
   <img src="docs/images/artifice-transcribe-workflow.gif" width="880" alt="Artifice Transcribe workflow: a finished interview with its waveform, the two speakers named, a misheard word corrected with a diff against the recognised text, the edit saved, then the export formats">
 </p>
 
+<p align="center">
+  <sub>The interview in this demo is a dramatisation. Joseph Freeman's words are invented from a few facts on
+  <a href="https://en.wikipedia.org/wiki/May_O'Callaghan">May O'Callaghan's Wikipedia page</a>, and the audio is synthetic.</sub>
+</p>
+
 ## Getting started
 
 ```bash
