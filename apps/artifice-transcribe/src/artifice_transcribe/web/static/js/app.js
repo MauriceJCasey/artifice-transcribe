@@ -185,6 +185,9 @@
       if (e.key === 'Escape') {
         closeSearchModal();
         $('history-panel')?.classList.add('hidden');
+        if ($('model-guide-panel') && !$('model-guide-panel').classList.contains('hidden')) {
+          setModelGuide(false);
+        }
       }
       // Alt+S: split segment at cursor
       if (e.altKey && e.key === 's') {
@@ -1475,6 +1478,23 @@
     }
   }
 
+  // The "About speaker diarisation" help beside the Model field.
+  function setModelGuide(open) {
+    $('model-guide-panel').classList.toggle('hidden', !open);
+    $('model-guide-toggle').setAttribute('aria-expanded', String(open));
+  }
+
+  function initModelGuide() {
+    const toggle = $('model-guide-toggle');
+    const panel = $('model-guide-panel');
+    if (!toggle || !panel) return;
+    toggle.addEventListener('click', () => setModelGuide(panel.classList.contains('hidden')));
+    $('model-guide-close').addEventListener('click', () => {
+      setModelGuide(false);
+      toggle.focus();
+    });
+  }
+
   function initHealthPanel() {
     $('btn-health-details').addEventListener('click', () => {
       const panel = $('health-panel');
@@ -2472,6 +2492,7 @@ function initDownloadDialog() {
     initUploadForm();
     initAudioHighlight();
     initHealthPanel();
+    initModelGuide();
     initGlobalSearch();
     initKeyboardShortcuts();
     initSettingsPanel();

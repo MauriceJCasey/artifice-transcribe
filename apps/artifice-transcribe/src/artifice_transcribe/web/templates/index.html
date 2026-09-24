@@ -44,7 +44,9 @@
     <label>Model
       <div style="display:flex;gap:0.5rem;align-items:center;">
         <span id="opt-model-size" class="model-badge" style="flex:1;">—</span>
-        <span class="dim" style="font-size:0.8rem;cursor:pointer;color:var(--accent);" title="Show BYOM guide" id="model-guide-toggle">ⓘ</span>
+        <button type="button" id="model-guide-toggle" aria-label="About speaker diarisation" title="About speaker diarisation" aria-expanded="false" aria-controls="model-guide-panel" style="background:none;border:none;cursor:pointer;color:var(--accent);padding:0;line-height:1;display:inline-flex;align-items:center;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </button>
       </div>
     </label>
     <label>Language <input type="text" id="opt-language" class="opt-input-lang" placeholder="auto-detect"></label>
@@ -60,16 +62,13 @@
       It splits audio into <strong>Speaker-00</strong>, <strong>Speaker-01</strong>, etc., based on voice characteristics.
     </p>
     <p class="dim" style="margin:0.25rem 0;">
-      <strong>How to Get Diarisation</strong>:
+      <strong>Where it comes from:</strong> <code>pyannote.audio</code>, run locally through WhisperX &mdash;
+      <a href="https://huggingface.co/pyannote/speaker-diarization-community-1" target="_blank" rel="noopener" style="color:var(--accent);">pyannote/speaker-diarization-community-1</a>
+      is the model WhisperX uses by default. It is gated on Hugging Face: accept its terms there, then add your token in Settings.
     </p>
-    <ul class="dim" style="margin:0.25rem 0;padding-left:1.2rem;font-size:0.85rem;">
-      <li>Open source: <code>pyannote.audio</code> for speaker diarisation — <a href="https://huggingface.co/pyannote/speaker-diarization-community-1" target="_blank" rel="noopener" style="color:var(--accent);">pyannote/speaker-diarization-community-1</a>, the model WhisperX uses by default</li>
-      <li>Tool to run locally: <code>diarisation-tool</code> (CNNDiarization, pyannote.audio-silero)</li>
-      <li>Cloud SaaS: <code>AssemblyAI Async API</code>, <code>Deepgram Live API</code></li>
-      <li>On-prem: Docker containers with <code>vits-gnu</code> + <code>whisperx</code></li>
-    </ul>
     <p class="dim" style="margin:0.25rem 0;">
-      <strong>Hugging Face:</strong> Search "diarisation" or "speaker embeddings" — models like <code>pyannote/embedding</code> are lightweight and can process speaker segments.
+      <strong>Recognising people across interviews:</strong> enrol a speaker and Artifice Transcribe compares voices
+      using <code>pyannote/embedding</code>.
     </p>
     <button class="btn tiny" id="model-guide-close" style="margin-top:0.5rem;">Close Guide</button>
   </div>
@@ -125,8 +124,8 @@
       </div>
 
       <div class="panel-empty" id="transcript-empty">
-        <p class="panel-empty-title">No transcripts yet.</p>
-        <p class="panel-empty-desc">Choose a completed recording to review its transcript.</p>
+        <p class="panel-empty-title">No transcript open.</p>
+        <p class="panel-empty-desc">Choose a completed recording above to review its transcript.</p>
       </div>
 
       <div class="card transcript-card hidden" id="transcript-card">

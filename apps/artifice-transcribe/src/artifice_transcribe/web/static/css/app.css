@@ -606,6 +606,13 @@ table.queue tbody tr.selected { background: var(--accent-wash); }
   margin: 0 0 0.2rem;
 }
 
+/* button.btn pins line-height to 1 (for labels with a dingbat glyph). These
+   labels are plain text and wrap in the narrow audio pane, and at 1 the two
+   lines of "Enroll selected as known speaker" overlapped. */
+.speaker-form button.btn {
+  line-height: 1.3;
+}
+
 .speaker-row {
   display: flex;
   align-items: center;

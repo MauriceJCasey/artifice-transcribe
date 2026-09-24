@@ -109,6 +109,62 @@ def test_open_transcript_fits_its_card(ui, width):
     u.assert_clean()
 
 
+def test_pane_before_a_transcript_is_open_does_not_deny_there_are_any(ui):
+    """It said "No transcripts yet." directly beneath a library that listed one."""
+    u = ui(byom_configured=True)
+    u.tab("library")
+    expect(u.page.locator("#library-body [data-row-job]")).to_have_count(1)
+    expect(u.page.locator("#transcript-empty")).to_contain_text("No transcript open")
+    expect(u.page.locator("#transcript-empty")).not_to_contain_text("No transcripts yet")
+    u.assert_clean()
+
+
+def test_wrapping_speaker_buttons_have_room_between_lines(ui):
+    """ "Enroll selected as known speaker" wraps in the audio pane; at the
+    inherited line-height of 1 its two lines overlapped."""
+    u = ui(byom_configured=True)
+    u.tab("library")
+    u.page.locator("#library-body [data-row-job]").first.click()
+    expect(u.page.locator("#transcript-card")).to_be_visible()
+    ratio = u.page.locator("#btn-enroll-from-job").evaluate(
+        """el => { const cs = getComputedStyle(el);
+          return parseFloat(cs.lineHeight) / parseFloat(cs.fontSize); }"""
+    )
+    assert ratio >= 1.2, f"line-height is {ratio:.2f}x the font size"
+
+
+def test_diarisation_guide_opens_and_closes_from_a_real_button(ui):
+    """The help beside Model is a keyboard-reachable button that works.
+
+    It was a click-only <span> containing U+24D8, which the bundled fonts lack
+    (so it drew as a missing-glyph box), and nothing was listening to it.
+    """
+    u = ui(byom_configured=True)
+    toggle = u.page.locator("#model-guide-toggle")
+    panel = u.page.locator("#model-guide-panel")
+
+    assert toggle.evaluate("el => el.tagName") == "BUTTON"
+    assert toggle.get_attribute("aria-label") == "About speaker diarisation"
+    assert "ⓘ" not in toggle.inner_text()
+    expect(panel).to_be_hidden()
+
+    toggle.focus()
+    u.page.keyboard.press("Enter")
+    expect(panel).to_be_visible()
+    expect(toggle).to_have_attribute("aria-expanded", "true")
+
+    u.page.keyboard.press("Escape")
+    expect(panel).to_be_hidden()
+    expect(toggle).to_have_attribute("aria-expanded", "false")
+
+    toggle.click()
+    expect(panel).to_be_visible()
+    u.page.locator("#model-guide-close").click()
+    expect(panel).to_be_hidden()
+    expect(toggle).to_be_focused()
+    u.assert_clean()
+
+
 @pytest.mark.parametrize("width", [1024, 1200])
 def test_every_tab_is_visible(ui, width):
     """The connection label collapses to its dot so all four tabs fit.
