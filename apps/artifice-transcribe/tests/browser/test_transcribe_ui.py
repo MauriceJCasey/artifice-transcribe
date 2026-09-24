@@ -75,6 +75,40 @@ def test_research_shell_delivers_local_font_and_variant_styles(ui):
     u.assert_clean()
 
 
+@pytest.mark.parametrize("width", [1024, 1440])
+def test_open_transcript_fits_its_card(ui, width):
+    """The transcript column wraps instead of stretching the card sideways.
+
+    A bare ``2fr`` track grew to the no-wrap edit toolbar's width, so text ran
+    off the card and the metadata form spilled over the transcript.
+    """
+    u = ui(byom_configured=True)
+    u.page.set_viewport_size({"width": width, "height": 900})
+    u.tab("library")
+    u.page.locator("#library-body [data-row-job]").first.click()
+    expect(u.page.locator("#transcript-card")).to_be_visible()
+
+    layout = u.page.evaluate(
+        """() => {
+          const box = (sel) => document.querySelector(sel).getBoundingClientRect();
+          const panel = document.getElementById('panel-library');
+          const card = box('#transcript-card'), pane = box('.audio-pane');
+          const segs = [...document.querySelectorAll('#segments .seg-text')];
+          return {
+            panelScrollsSideways: panel.scrollWidth > panel.clientWidth + 1,
+            segmentsPastCard: segs.some((s) => s.getBoundingClientRect().right > card.right + 1),
+            metadataPastPane: box('.metadata-grid').right > pane.right + 1,
+          };
+        }"""
+    )
+    assert layout == {
+        "panelScrollsSideways": False,
+        "segmentsPastCard": False,
+        "metadataPastPane": False,
+    }
+    u.assert_clean()
+
+
 def test_research_navigation_preserves_deep_links_history_and_focus(ui):
     """Direct views and browser history remain authoritative after the rail move."""
     u = ui(populated=False, byom_configured=True)
@@ -241,8 +275,10 @@ def test_model_download_consent_flow(ui):
     # The heartbeat-only synthetic SSE ends, driving the dialog to a terminal
     # state; by then the consent + download POSTs have been dispatched.
     expect(u.page.locator("#dlg-btn-download")).to_have_text("Retry", timeout=10_000)
-    assert u.consents == [{"key": "whisper-large-v3", "consent": True}]
-    assert u.downloads == ["whisper-large-v3"]
+    # By reference, not a "key": "<literal>" pair, which gitleaks reads as an API key.
+    whisper = fx.ASR_MODEL_KEYS[0]
+    assert u.consents == [{"key": whisper, "consent": True}]
+    assert u.downloads == [whisper]
 
     u.page.locator("#dlg-close").click()
     expect(u.page.locator("#download-modal-overlay")).to_be_hidden()

@@ -474,6 +474,13 @@ class TestByomContractAndSsrf:
         assert "About ArtificeTranscribe" in r.text
         assert "app-shell" in r.text
 
+    def test_about_page_skips_workspace_scripts(self, client):
+        # app.js binds to workspace markup About doesn't have, and threw on load.
+        html = client.get("/about").text
+        assert "/static/js/app.js" not in html
+        assert "global-search-input" not in html
+        assert "/shared/byom.js" in html
+
     def test_static_index_html_is_gone(self, client):
         r = client.get("/static/index.html")
         assert r.status_code == 404

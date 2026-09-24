@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block workspace %}
-<div class="masthead-search" id="masthead-search"><input type="text" id="global-search-input" placeholder="Search transcripts (/)" class="search-input"></div>
+{% block masthead_search %}<div class="masthead-search" id="masthead-search"><input type="text" id="global-search-input" placeholder="Search transcripts (/)" class="search-input"></div>{% endblock %}
 <div class="app">{% block content %}{% endblock %}</div>
 {% endblock %}
 
@@ -23,8 +23,12 @@
 <script src="/shared/byom.js?v={{ asset_v }}"></script>
 <script src="/shared/toast.js?v={{ asset_v }}"></script>
 <script src="/shared/bind.js?v={{ asset_v }}"></script>
+{# The workspace scripts expect the workspace markup; pages without it (About)
+   blank this block rather than load code that throws on missing elements. #}
+{% block page_scripts %}
 <script src="/static/js/app.js?v={{ asset_v }}"></script>
 <script src="/static/js/review_preferences.js?v={{ asset_v }}"></script>
+{% endblock %}
 <script>
 (function () {
   "use strict";
