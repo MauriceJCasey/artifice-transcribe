@@ -221,7 +221,6 @@ _MASTHEAD_CTX = {
     "shell_variant": "research",
     "brand_accent": "Transcribe",
     "page_title": "Oral history workspace",
-    "document_context": "Local recordings",
     "nav_items": _TRANSCRIBE_NAV_ITEMS,
     "show_inspector": False,
     "show_activity": True,

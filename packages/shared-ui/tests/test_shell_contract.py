@@ -43,8 +43,8 @@ def test_research_styles_are_variant_scoped_and_retain_legacy_tokens():
     assert '[data-shell-variant="research"]' in css
     assert '[data-shell-variant="research"] .progress-bar' in css
     assert "transition: none;" in css
-    assert "grid-template: var(--shell-title) auto minmax(0, 1fr) auto" in css
-    assert '[data-shell-variant="research"] .shell-nav nav' in css
+    assert "grid-template: var(--shell-title) minmax(0, 1fr) auto" in css
+    assert '[data-shell-variant="research"] .shell-titlebar-nav' in css
     assert 'font-family: "Source Sans 3"' in font_css
     shell = (files(shared_ui) / "templates/_app_shell.html").read_text()
     assert '{% if shell_variant == "research" %}' in shell

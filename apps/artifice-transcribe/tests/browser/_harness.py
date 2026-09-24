@@ -144,12 +144,13 @@ class TranscribeUi:
         )
 
     def tab(self, name: str) -> None:
-        # The visible navigation lives in the shared shell's .shell-nav; the
-        # app's legacy .tab buttons remain the panel controller but are visually
+        # The visible navigation lives in the shared shell's titlebar
+        # (.shell-titlebar-nav, single-line research shell); the app's
+        # legacy .tab buttons remain the panel controller but are visually
         # clipped by shared CSS (see UI_REDESIGN_PLAN.md §2). Clicking a
-        # .shell-nav link navigates to /?view=… and reloads the page.
+        # titlebar nav link navigates to /?view=… and reloads the page.
         with self.page.expect_navigation(wait_until="domcontentloaded"):
-            self.page.locator(f'.shell-nav a[href="/?view={name}"]').click()
+            self.page.locator(f'.shell-titlebar-nav a[href="/?view={name}"]').click()
         expect(self.page.locator(f"#panel-{name}")).to_be_visible()
 
     def wait_until(self, predicate, timeout_ms: int = 5000) -> bool:

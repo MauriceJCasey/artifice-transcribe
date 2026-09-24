@@ -23,6 +23,10 @@
       <button class="shell-icon-button shell-menu pywebview-drag-region-exclude" type="button" data-shell-action="nav" aria-label="Open navigation" aria-expanded="false">☰</button>
       <a class="shell-brand pywebview-drag-region-exclude" href="/">Artifice <strong>{{ brand_accent }}</strong></a>
       {% if document_context %}<span class="shell-context">{{ document_context }}</span>{% endif %}
+      {% if shell_variant == "research" %}
+      <span class="shell-titlebar-divider pywebview-drag-region-exclude" aria-hidden="true"></span>
+      <nav class="shell-titlebar-nav pywebview-drag-region-exclude" aria-label="Primary">{% for item in nav_items %}<a href="{{ item.href }}"{% if item.key == active_tab %} aria-current="page"{% endif %}>{{ item.label }}</a>{% endfor %}</nav>
+      {% endif %}
       <div class="shell-title-actions pywebview-drag-region-exclude">
         <button class="shell-status" type="button" data-shell-action="model"><span class="status-dot" aria-hidden="true"></span><span data-model-label>Set up connection</span></button>
         <button class="shell-icon-button" type="button" data-shell-action="theme" aria-label="Change colour theme">◐</button>

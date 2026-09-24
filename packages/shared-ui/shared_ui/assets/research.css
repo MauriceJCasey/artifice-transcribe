@@ -35,6 +35,7 @@
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
+  --shell-title: 4rem;
 }
 
 [data-shell-variant="research"] body {
@@ -45,9 +46,15 @@
   line-height: 1.45;
 }
 
+/* Direction A — single rule bar: brand, tabs and utilities share one
+   paper-raised titlebar, closed off by one ink rule at its bottom edge.
+   The active tab's gold underline sits flush on that rule, reading as a
+   break in the line itself rather than a bolted-on accent. The old
+   two-row titlebar-over-black-rail layout is gone; the tab rail
+   (.shell-nav aside) is hidden in favour of .shell-titlebar-nav, below. */
 [data-shell-variant="research"] .shell-titlebar {
   border-top: 4px solid var(--ink);
-  border-bottom: 1px solid var(--rule);
+  border-bottom: 2px solid var(--ink);
   background: var(--paper-raised);
   box-shadow: var(--shadow-nav);
 }
@@ -59,7 +66,6 @@
   font-weight: 600;
 }
 
-[data-shell-variant="research"] .shell-nav,
 [data-shell-variant="research"] .shell-inspector,
 [data-shell-variant="research"] .shell-activity {
   background: var(--paper-raised);
@@ -67,15 +73,12 @@
 }
 
 [data-shell-variant="research"] .shell-nav {
-  background: #1b1915;
-  border-color: #343027;
-  color: #f2ecdc;
+  display: none;
 }
 
-/* Stage 2: keep one visible navigation authority in a compact top rail. */
 [data-shell-variant="research"] .app-shell,
 [data-shell-variant="research"] .app-shell:has(.shell-inspector) {
-  grid-template: var(--shell-title) auto minmax(0, 1fr) auto /
+  grid-template: var(--shell-title) minmax(0, 1fr) auto /
     minmax(0, 1fr) minmax(16rem, var(--shell-inspector));
 }
 
@@ -83,44 +86,51 @@
   display: none;
 }
 
-[data-shell-variant="research"] .shell-nav {
-  grid-column: 1 / -1;
-  grid-row: 2;
-  display: flex;
-  align-items: center;
-  gap: var(--space-7);
-  min-width: 0;
-  padding: var(--space-3) var(--space-6);
-  border-right: 0;
-  border-bottom: 1px solid #343027;
+[data-shell-variant="research"] .shell-titlebar-divider {
+  align-self: stretch;
+  width: 1px;
+  margin: var(--space-4) 0;
+  background: var(--rule);
 }
 
-[data-shell-variant="research"] .shell-nav-heading {
-  flex: 0 0 auto;
-  margin: 0;
-}
-
-[data-shell-variant="research"] .shell-nav nav {
+[data-shell-variant="research"] .shell-titlebar-nav {
+  align-self: stretch;
   display: flex;
-  gap: var(--space-2);
+  align-items: stretch;
+  gap: var(--space-1);
   min-width: 0;
   overflow-x: auto;
 }
 
-[data-shell-variant="research"] .shell-nav a {
+[data-shell-variant="research"] .shell-titlebar-nav a {
+  display: flex;
+  align-items: center;
+  height: 100%;
   flex: 0 0 auto;
-  padding: var(--space-3) var(--space-4);
-  border-left: 0;
-  border-bottom: 2px solid transparent;
+  padding: 0 var(--space-5);
+  border-bottom: 3px solid transparent;
+  color: var(--ink-soft);
+  font-family: var(--font-label);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: var(--label-tracking);
+  text-decoration: none;
 }
 
-[data-shell-variant="research"] .shell-nav a[aria-current="page"] {
+[data-shell-variant="research"] .shell-titlebar-nav a:hover {
+  background: var(--paper-recessed);
+  color: var(--ink);
+}
+
+[data-shell-variant="research"] .shell-titlebar-nav a[aria-current="page"] {
   border-bottom-color: var(--gold);
+  color: var(--ink);
 }
 
 [data-shell-variant="research"] .shell-workspace {
   grid-column: 1 / -1;
-  grid-row: 3;
+  grid-row: 2;
 }
 
 [data-shell-variant="research"] .app-shell:has(.shell-inspector) .shell-workspace {
@@ -129,55 +139,43 @@
 
 [data-shell-variant="research"] .shell-inspector {
   grid-column: 2;
-  grid-row: 3;
+  grid-row: 2;
 }
 
 [data-shell-variant="research"] .shell-activity {
   grid-column: 1 / -1;
-  grid-row: 4;
+  grid-row: 3;
 }
 
-[data-shell-variant="research"] .shell-nav-heading {
-  color: #bdb49f;
-}
-
-[data-shell-variant="research"] .shell-nav a {
-  color: #e5dece;
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-}
-
-[data-shell-variant="research"] .shell-nav a:hover {
-  background: rgba(255, 255, 255, 0.07);
-  color: #ffffff;
-}
-
-[data-shell-variant="research"] .shell-nav a[aria-current="page"] {
-  background: var(--accent);
-  border-color: var(--gold);
-  color: #ffffff;
-}
-
-[data-shell-variant="research"] .shell-nav {
-  padding-top: var(--space-6);
-}
-
-[data-shell-variant="research"] .shell-nav a {
-  border-left-width: 2px;
-  border-radius: var(--radius-sm);
-  color: var(--ink-soft);
-  font-family: var(--font-label);
-  font-weight: 600;
-  text-transform: none;
-}
-
-[data-shell-variant="research"] .shell-nav a:hover {
+/* Utility cluster: status / theme / suite read as one control group,
+   separated from native window chrome by a rule instead of proximity. */
+[data-shell-variant="research"] .shell-title-actions {
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-full);
   background: var(--paper-recessed);
-  color: var(--ink);
+  margin-right: var(--space-4);
 }
 
-[data-shell-variant="research"] .shell-nav a[aria-current="page"] {
-  background: var(--accent-wash);
-  color: var(--accent-deep);
+[data-shell-variant="research"] .shell-title-actions > *:not(:last-child) {
+  border-right: 1px solid var(--rule);
+}
+
+[data-shell-variant="research"] .shell-status {
+  white-space: nowrap;
+}
+
+[data-shell-variant="research"] .window-controls {
+  border-left: 1px solid var(--rule);
+}
+
+/* Nav tabs are the one element allowed to shrink below its content size —
+   everything else (brand, utility cluster, window chrome) keeps its
+   natural minimum and the tab rail scrolls horizontally instead. */
+[data-shell-variant="research"] .shell-titlebar-nav {
+  flex-shrink: 1;
+  min-width: 4rem;
 }
 
 [data-shell-variant="research"] button,

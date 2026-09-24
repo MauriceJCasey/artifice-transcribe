@@ -36,7 +36,7 @@
     const current = new URL(window.location.href);
     const currentView = current.searchParams.get("view");
     if (!currentView) return;
-    document.querySelectorAll(".shell-nav a").forEach((link) => {
+    document.querySelectorAll(".shell-nav a, .shell-titlebar-nav a").forEach((link) => {
       const target = new URL(link.href, current);
       const samePath = target.pathname === current.pathname;
       const targetView = target.searchParams.get("view");
