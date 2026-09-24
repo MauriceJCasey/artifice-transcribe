@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Artifice Transcribe"
+abstract: >-
+  A local-first, bring-your-own-model (BYOM) tool for oral history and
+  interview transcription with speaker diarization, built on WhisperX and
+  pyannote.audio. Transcripts are reviewed against synchronised audio, carry
+  interview metadata, and export to archival formats such as OHMS and TEI.
+  Recordings never leave the researcher's machine.
+type: software
+authors:
+  - family-names: Casey
+    given-names: Maurice J.
+    affiliation: "Queen's University Belfast"
+    orcid: "https://orcid.org/0000-0001-6019-3578"
+    website: "https://mauricejcasey.com"
+repository-code: "https://github.com/MauriceJCasey/artifice-transcribe"
+url: "https://www.mauricejcasey.com/tools"
+license: AGPL-3.0-or-later
+version: 0.6.0
+date-released: "2026-09-24"
+keywords:
+  - digital humanities
+  - oral history
+  - speech recognition
+  - speaker diarization
+  - transcription
+  - local-first

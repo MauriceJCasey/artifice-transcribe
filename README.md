@@ -8,7 +8,7 @@
   <a href="https://github.com/MauriceJCasey/artifice-transcribe/actions/workflows/safety-tests.yml"><img src="https://github.com/MauriceJCasey/artifice-transcribe/actions/workflows/safety-tests.yml/badge.svg" alt="safety-tests"></a>
   <a href="https://api.reuse.software/info/github.com/MauriceJCasey/artifice-transcribe"><img src="https://api.reuse.software/badge/github.com/MauriceJCasey/artifice-transcribe" alt="REUSE status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0--or--later-blue.svg" alt="License"></a>
-  <img src="https://img.shields.io/badge/version-0.4.0-informational" alt="Version 0.4.0">
+  <img src="https://img.shields.io/badge/version-0.6.0-informational" alt="Version 0.6.0">
 </p>
 
 A local-first transcription tool for oral history and interviews, with speaker diarization.
@@ -38,6 +38,10 @@ troubleshooting local models.
 - **Export.** OHMS XML, TEI XML, SRT, VTT, JSON, Markdown, PDF and plain text.
 - **Optional text tools.** Connect Ollama, LM Studio or anything OpenAI-compatible to summarise
   or clean up a finished transcript. This never touches transcription itself.
+
+<p align="center">
+  <img src="docs/images/artifice-transcribe-workflow.gif" width="880" alt="Artifice Transcribe workflow: a finished interview with its waveform, the two speakers named, a misheard word corrected with a diff against the recognised text, the edit saved, then the export formats">
+</p>
 
 ## Getting started
 
